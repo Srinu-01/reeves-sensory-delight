@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { Menu, X, Phone, Calendar } from 'lucide-react';
+import { Menu, X, Phone, Calendar, User, ShoppingCart } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 
 const Navigation = () => {
@@ -25,6 +25,7 @@ const Navigation = () => {
     { name: 'About', href: '#philosophy', section: 'philosophy' },
     { name: 'Gallery', href: '#gallery', section: 'gallery' },
     { name: 'Contact', href: '#contact', section: 'contact' },
+    { name: 'Pre-Order', href: '/preorder', section: null },
   ];
 
   const scrollToSection = (sectionId: string) => {
@@ -53,6 +54,16 @@ const Navigation = () => {
     setIsMobileMenuOpen(false);
   };
 
+  const handleNavClick = (item: typeof navItems[0]) => {
+    if (item.href.startsWith('/')) {
+      setIsMobileMenuOpen(false);
+      return;
+    }
+    if (item.section) {
+      scrollToSection(item.section);
+    }
+  };
+
   return (
     <>
       <motion.nav
@@ -79,26 +90,56 @@ const Navigation = () => {
             {/* Desktop Navigation */}
             <div className="hidden lg:flex items-center space-x-8">
               {navItems.map((item) => (
-                <motion.button
-                  key={item.name}
-                  onClick={() => item.href.startsWith('#') ? scrollToSection(item.section) : null}
-                  className="relative text-white hover:text-amber-400 transition-colors duration-300 font-medium"
-                  whileHover={{ y: -2 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  {item.name}
-                  <motion.div
-                    className="absolute -bottom-1 left-0 w-full h-0.5 bg-amber-400 origin-left"
-                    initial={{ scaleX: 0 }}
-                    whileHover={{ scaleX: 1 }}
-                    transition={{ duration: 0.3 }}
-                  />
-                </motion.button>
+                <motion.div key={item.name}>
+                  {item.href.startsWith('/') ? (
+                    <Link
+                      to={item.href}
+                      className="relative text-white hover:text-amber-400 transition-colors duration-300 font-medium"
+                    >
+                      <motion.span
+                        whileHover={{ y: -2 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        {item.name}
+                      </motion.span>
+                      <motion.div
+                        className="absolute -bottom-1 left-0 w-full h-0.5 bg-amber-400 origin-left"
+                        initial={{ scaleX: 0 }}
+                        whileHover={{ scaleX: 1 }}
+                        transition={{ duration: 0.3 }}
+                      />
+                    </Link>
+                  ) : (
+                    <motion.button
+                      onClick={() => handleNavClick(item)}
+                      className="relative text-white hover:text-amber-400 transition-colors duration-300 font-medium"
+                      whileHover={{ y: -2 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      {item.name}
+                      <motion.div
+                        className="absolute -bottom-1 left-0 w-full h-0.5 bg-amber-400 origin-left"
+                        initial={{ scaleX: 0 }}
+                        whileHover={{ scaleX: 1 }}
+                        transition={{ duration: 0.3 }}
+                      />
+                    </motion.button>
+                  )}
+                </motion.div>
               ))}
             </div>
 
             {/* Action Buttons */}
             <div className="hidden lg:flex items-center space-x-4">
+              <Link to="/profile">
+                <Button
+                  variant="outline"
+                  className="border-white text-white hover:bg-white hover:text-slate-900 px-4 py-2 rounded-full transition-all duration-300"
+                >
+                  <User className="w-4 h-4 mr-2" />
+                  Profile
+                </Button>
+              </Link>
               <Button
                 onClick={scrollToBooking}
                 className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white px-6 py-2 rounded-full border border-amber-400 hover:border-amber-300 transition-all duration-300"
@@ -155,19 +196,44 @@ const Navigation = () => {
               {/* Menu Items */}
               <div className="flex-1 flex flex-col justify-center px-6">
                 {navItems.map((item, index) => (
-                  <motion.button
-                    key={item.name}
-                    onClick={() => item.href.startsWith('#') ? scrollToSection(item.section) : null}
-                    className="text-white text-2xl font-light py-4 text-left border-b border-white/10 hover:text-amber-400 transition-colors duration-300"
-                    initial={{ x: -50, opacity: 0 }}
-                    animate={{ x: 0, opacity: 1 }}
-                    transition={{ duration: 0.3, delay: index * 0.1 }}
-                  >
-                    {item.name}
-                  </motion.button>
+                  <motion.div key={item.name}>
+                    {item.href.startsWith('/') ? (
+                      <Link
+                        to={item.href}
+                        className="text-white text-2xl font-light py-4 text-left border-b border-white/10 hover:text-amber-400 transition-colors duration-300 block"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                      >
+                        <motion.span
+                          initial={{ x: -50, opacity: 0 }}
+                          animate={{ x: 0, opacity: 1 }}
+                          transition={{ duration: 0.3, delay: index * 0.1 }}
+                        >
+                          {item.name}
+                        </motion.span>
+                      </Link>
+                    ) : (
+                      <motion.button
+                        onClick={() => handleNavClick(item)}
+                        className="text-white text-2xl font-light py-4 text-left border-b border-white/10 hover:text-amber-400 transition-colors duration-300 w-full"
+                        initial={{ x: -50, opacity: 0 }}
+                        animate={{ x: 0, opacity: 1 }}
+                        transition={{ duration: 0.3, delay: index * 0.1 }}
+                      >
+                        {item.name}
+                      </motion.button>
+                    )}
+                  </motion.div>
                 ))}
                 
                 <div className="pt-8 space-y-4">
+                  <Link to="/profile" onClick={() => setIsMobileMenuOpen(false)}>
+                    <Button
+                      className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white py-3 rounded-full"
+                    >
+                      <User className="w-4 h-4 mr-2" />
+                      My Profile
+                    </Button>
+                  </Link>
                   <Button
                     onClick={scrollToBooking}
                     className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white py-3 rounded-full"

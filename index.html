@@ -1,39 +1,104 @@
 
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Reeves Restaurant | Luxury Dining in Kakinada</title>
-    <meta name="description" content="Experience the finest culinary journey at Reeves Restaurant, Kakinada. Where taste meets elegance in an atmosphere of luxury and sophistication." />
+    
+    <!-- Primary Meta Tags -->
+    <title>Reeves Restaurant - Premium Dining Experience in Kakinada</title>
+    <meta name="title" content="Reeves Restaurant - Premium Dining Experience in Kakinada" />
+    <meta name="description" content="Experience luxury dining at Reeves Restaurant in Kakinada. Authentic flavors, elegant ambiance, and exceptional service. Reserve your table today." />
+    <meta name="keywords" content="restaurant, fine dining, Kakinada, luxury, biryani, authentic cuisine, premium dining" />
     <meta name="author" content="Reeves Restaurant" />
-    <meta name="keywords" content="restaurant, fine dining, Kakinada, luxury dining, biryani, Indian cuisine, booking" />
-
+    
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="Reeves Restaurant | Luxury Dining in Kakinada" />
-    <meta property="og:description" content="Experience the finest culinary journey at Reeves Restaurant, Kakinada. Where taste meets elegance." />
-    <meta property="og:image" content="https://images.unsplash.com/photo-1414235077428-338989a2e8c0?q=80&w=2070&auto=format&fit=crop" />
-    <meta property="og:url" content="https://reeves-restaurant.com" />
-
-    <!-- Twitter -->
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Reeves Restaurant | Luxury Dining in Kakinada" />
-    <meta name="twitter:description" content="Experience the finest culinary journey at Reeves Restaurant, Kakinada. Where taste meets elegance." />
-    <meta name="twitter:image" content="https://images.unsplash.com/photo-1414235077428-338989a2e8c0?q=80&w=2070&auto=format&fit=crop" />
-
-    <!-- Favicon -->
-    <link rel="icon" href="/favicon.ico" type="image/x-icon" />
+    <meta property="og:url" content="https://reeveskakinada.com/" />
+    <meta property="og:title" content="Reeves Restaurant - Premium Dining Experience in Kakinada" />
+    <meta property="og:description" content="Experience luxury dining at Reeves Restaurant in Kakinada. Authentic flavors, elegant ambiance, and exceptional service." />
+    <meta property="og:image" content="https://images.unsplash.com/photo-1414235077428-338989a2e8c0?q=80&w=1200&auto=format&fit=crop" />
     
-    <!-- Fonts -->
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content="https://reeveskakinada.com/" />
+    <meta property="twitter:title" content="Reeves Restaurant - Premium Dining Experience in Kakinada" />
+    <meta property="twitter:description" content="Experience luxury dining at Reeves Restaurant in Kakinada. Authentic flavors, elegant ambiance, and exceptional service." />
+    <meta property="twitter:image" content="https://images.unsplash.com/photo-1414235077428-338989a2e8c0?q=80&w=1200&auto=format&fit=crop" />
+    
+    <!-- Additional Meta Tags -->
+    <meta name="robots" content="index, follow" />
+    <meta name="language" content="English" />
+    <meta name="revisit-after" content="7 days" />
+    
+    <!-- Local Business Schema -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Restaurant",
+      "name": "Reeves Restaurant",
+      "image": "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?q=80&w=1200&auto=format&fit=crop",
+      "url": "https://reeveskakinada.com",
+      "telephone": "+919849834102",
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "MG Road",
+        "addressLocality": "Kakinada",
+        "addressRegion": "Andhra Pradesh",
+        "postalCode": "533001",
+        "addressCountry": "IN"
+      },
+      "geo": {
+        "@type": "GeoCoordinates",
+        "latitude": 16.9318,
+        "longitude": 82.2380
+      },
+      "openingHoursSpecification": [
+        {
+          "@type": "OpeningHoursSpecification",
+          "dayOfWeek": [
+            "Monday",
+            "Tuesday", 
+            "Wednesday",
+            "Thursday",
+            "Friday",
+            "Saturday",
+            "Sunday"
+          ],
+          "opens": "11:00",
+          "closes": "23:00"
+        }
+      ],
+      "servesCuisine": ["Indian", "North Indian", "South Indian", "Biryani"],
+      "priceRange": "₹₹₹",
+      "acceptsReservations": true
+    }
+    </script>
+    
+    <!-- Preconnect to external domains -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://images.unsplash.com">
     
-    <!-- Preload critical resources -->
-    <link rel="preload" href="https://images.unsplash.com/photo-1414235077428-338989a2e8c0?q=80&w=2070&auto=format&fit=crop" as="image">
+    <!-- Preload critical fonts -->
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    
+    <!-- Apple Touch Icon -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon.ico">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon.ico">
+    
+    <!-- Theme Color -->
+    <meta name="theme-color" content="#d97706">
+    <meta name="msapplication-TileColor" content="#d97706">
+    
+    <!-- Viewport optimizations -->
+    <meta name="format-detection" content="telephone=yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   </head>
-
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
