@@ -1,12 +1,30 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+
+import React, { useState } from 'react';
+import LoadingScreen from '@/components/LoadingScreen';
+import Hero from '@/components/Hero';
+import Philosophy from '@/components/Philosophy';
+import SignatureDishes from '@/components/SignatureDishes';
+import LiveStatus from '@/components/LiveStatus';
+import BookingSection from '@/components/BookingSection';
 
 const Index = () => {
+  const [isLoading, setIsLoading] = useState(true);
+
+  const handleLoadingComplete = () => {
+    setIsLoading(false);
+  };
+
+  if (isLoading) {
+    return <LoadingScreen onComplete={handleLoadingComplete} />;
+  }
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
-      </div>
+    <div className="min-h-screen">
+      <Hero />
+      <Philosophy />
+      <SignatureDishes />
+      <LiveStatus />
+      <BookingSection />
     </div>
   );
 };
