@@ -31,7 +31,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = async (email: string, password: string) => {
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+      
+      // Check if this is an admin email and create admin credentials if needed
+      if (email === 'admin@reeves.com' && user?.uid) {
+        try {
+          const adminDocRef = doc(db, 'admin_credentials', email);
+          const adminDoc = await getDoc(adminDocRef);
+          
+          if (!adminDoc.exists()) {
+            await setDoc(adminDocRef, {
+              uid: user.uid,
+              email: user.email,
+              isAdmin: true,
+              createdAt: new Date()
+            });
+          }
+        } catch (error) {
+          console.error('Error creating admin credentials:', error);
+        }
+      }
+      
       toast.success('Logged in successfully!');
     } catch (error: any) {
       toast.error(error.message);
@@ -44,13 +65,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const { user } = await createUserWithEmailAndPassword(auth, email, password);
       
       // Create user document in Firestore
-      await setDoc(doc(db, 'users', user.uid), {
-        uid: user.uid,
-        name,
-        email,
-        phone,
-        createdAt: new Date()
-      });
+      if (user?.uid) {
+        await setDoc(doc(db, 'users', user.uid), {
+          uid: user.uid,
+          name,
+          email,
+          phone,
+          createdAt: new Date()
+        });
+      }
       
       toast.success('Account created successfully!');
     } catch (error: any) {
@@ -71,8 +94,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const checkAdminStatus = async (user: User) => {
     try {
-      const adminDoc = await getDoc(doc(db, 'admin_credentials', user.email || ''));
-      setIsAdmin(adminDoc.exists());
+      if (user.email) {
+        const adminDoc = await getDoc(doc(db, 'admin_credentials', user.email));
+        setIsAdmin(adminDoc.exists());
+      }
     } catch (error) {
       console.error('Error checking admin status:', error);
       setIsAdmin(false);

@@ -9,28 +9,51 @@ const Hero = () => {
   const [displayText, setDisplayText] = useState('');
   const [textIndex, setTextIndex] = useState(0);
   const [isAudioEnabled, setIsAudioEnabled] = useState(false);
+  const [imagesLoaded, setImagesLoaded] = useState(false);
 
   const heroImages = [
     'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?q=80&w=2070&auto=format&fit=crop',
     'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=2070&auto=format&fit=crop',
     'https://images.unsplash.com/photo-1578474846511-04ba529f0b88?q=80&w=2071&auto=format&fit=crop',
     'https://images.unsplash.com/photo-1600891964092-4316c288032e?q=80&w=2070&auto=format&fit=crop',
-    'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?q=80&w=2070&auto=format&fit=crop',
-    'https://images.unsplash.com/photo-1551632436-cbf8dd35adfa?q=80&w=2071&auto=format&fit=crop',
-    'https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?q=80&w=2081&auto=format&fit=crop',
-    'https://images.unsplash.com/photo-1599487488170-d11ec9c172f0?q=80&w=2086&auto=format&fit=crop',
-    'https://images.unsplash.com/photo-1563379091339-03246963d293?q=80&w=2070&auto=format&fit=crop'
+    'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?q=80&w=2070&auto=format&fit=crop'
   ];
 
   const fullText = "Where Taste Meets Elegance";
 
+  // Preload images to prevent white flash
+  useEffect(() => {
+    const preloadImages = async () => {
+      const imagePromises = heroImages.map((src) => {
+        return new Promise((resolve, reject) => {
+          const img = new Image();
+          img.onload = resolve;
+          img.onerror = reject;
+          img.src = src;
+        });
+      });
+      
+      try {
+        await Promise.all(imagePromises);
+        setImagesLoaded(true);
+      } catch (error) {
+        console.error('Error preloading images:', error);
+        setImagesLoaded(true); // Continue even if some images fail
+      }
+    };
+
+    preloadImages();
+  }, []);
+
   // Image slideshow effect
   useEffect(() => {
+    if (!imagesLoaded) return;
+    
     const interval = setInterval(() => {
       setCurrentImageIndex((prev) => (prev + 1) % heroImages.length);
     }, 5000);
     return () => clearInterval(interval);
-  }, []);
+  }, [imagesLoaded]);
 
   // Typewriter effect
   useEffect(() => {
@@ -51,22 +74,36 @@ const Hero = () => {
     document.getElementById('menu')?.scrollIntoView({ behavior: 'smooth' });
   };
 
+  if (!imagesLoaded) {
+    return (
+      <section className="relative h-screen flex items-center justify-center bg-slate-900">
+        <div className="text-center text-white">
+          <div className="w-8 h-8 border-4 border-amber-400 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p>Loading...</p>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="relative h-screen flex items-center justify-center overflow-hidden">
       {/* Background Image Slideshow */}
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={currentImageIndex}
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{
-            backgroundImage: `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.6)), url('${heroImages[currentImageIndex]}')`
-          }}
-          initial={{ scale: 1.1, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          exit={{ scale: 0.9, opacity: 0 }}
-          transition={{ duration: 1.5 }}
-        />
-      </AnimatePresence>
+      <div className="absolute inset-0">
+        {heroImages.map((image, index) => (
+          <motion.div
+            key={index}
+            className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+            style={{
+              backgroundImage: `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.6)), url('${image}')`
+            }}
+            initial={{ opacity: 0 }}
+            animate={{ 
+              opacity: index === currentImageIndex ? 1 : 0 
+            }}
+            transition={{ duration: 1.5, ease: "easeInOut" }}
+          />
+        ))}
+      </div>
       
       {/* Parallax Overlay */}
       <motion.div
@@ -177,14 +214,15 @@ const Hero = () => {
         ))}
       </motion.div>
       
-      {/* Scroll Indicator */}
+      {/* Scroll Indicator - Fixed positioning */}
       <motion.div
-        className="absolute bottom-8 left-1/2 transform -translate-x-1/2"
+        className="absolute left-1/2 transform -translate-x-1/2 text-center"
+        style={{ bottom: '3%' }}
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 1, delay: 2 }}
       >
-        <div className="text-white text-center">
+        <div className="text-white">
           <p className="text-sm mb-4 tracking-wide">SCROLL TO DISCOVER</p>
           <motion.div
             className="w-px h-16 bg-gradient-to-b from-amber-400 to-transparent mx-auto"

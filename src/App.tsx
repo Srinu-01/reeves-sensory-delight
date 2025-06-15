@@ -12,6 +12,7 @@ import Contact from "./pages/Contact";
 import Admin from "./pages/Admin";
 import PreOrder from "./pages/PreOrder";
 import Profile from "./pages/Profile";
+import Reservation from "./pages/Reservation";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -31,6 +32,7 @@ const App = () => (
             <Route path="/admin" element={<Admin />} />
             <Route path="/preorder" element={<PreOrder />} />
             <Route path="/profile" element={<Profile />} />
+            <Route path="/reservation" element={<Reservation />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
