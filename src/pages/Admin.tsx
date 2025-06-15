@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -19,35 +19,67 @@ import {
   XCircle
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useAuth } from '@/contexts/AuthContext';
+import { doc, setDoc, collection, getDocs, query, orderBy } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 
 const Admin = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const { currentUser, login, logout, isAdmin } = useAuth();
   const [loginForm, setLoginForm] = useState({ email: '', password: '' });
+  const [bookings, setBookings] = useState<any[]>([]);
+  const [preOrders, setPreOrders] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
-  // Mock data for demo
-  const [bookings] = useState([
-    { id: 'RV123456', name: 'Rajesh Kumar', guests: 4, date: '2025-06-15', time: '19:00', status: 'confirmed' },
-    { id: 'RV123457', name: 'Priya Sharma', guests: 2, date: '2025-06-15', time: '20:00', status: 'pending' },
-    { id: 'RV123458', name: 'Amit Patel', guests: 6, date: '2025-06-16', time: '19:30', status: 'confirmed' }
-  ]);
+  useEffect(() => {
+    if (currentUser && isAdmin) {
+      loadAdminData();
+    }
+  }, [currentUser, isAdmin]);
 
-  const [menuItems] = useState([
-    { id: 1, name: 'Royal Hyderabadi Biryani', price: 389, category: 'Biryani', available: true },
-    { id: 2, name: 'Butter Chicken Supreme', price: 295, category: 'Curry', available: true },
-    { id: 3, name: 'Coastal Fish Curry', price: 425, category: 'Seafood', available: false }
-  ]);
+  const loadAdminData = async () => {
+    try {
+      setIsLoading(true);
+      
+      // Load bookings
+      const bookingsQuery = query(collection(db, 'bookings'), orderBy('createdAt', 'desc'));
+      const bookingsSnapshot = await getDocs(bookingsQuery);
+      const bookingsData = bookingsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setBookings(bookingsData);
 
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (loginForm.email === 'admin@reeves.com' && loginForm.password === 'admin123') {
-      setIsAuthenticated(true);
-      toast.success('Welcome to Reeves Admin Dashboard!');
-    } else {
-      toast.error('Invalid credentials. Please try again.');
+      // Load pre-orders
+      const preOrdersQuery = query(collection(db, 'preorders'), orderBy('createdAt', 'desc'));
+      const preOrdersSnapshot = await getDocs(preOrdersQuery);
+      const preOrdersData = preOrdersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setPreOrders(preOrdersData);
+      
+    } catch (error) {
+      console.error('Error loading admin data:', error);
+      toast.error('Failed to load admin data');
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  if (!isAuthenticated) {
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await login(loginForm.email, loginForm.password);
+      
+      // Create admin credentials document if this is the first login
+      if (loginForm.email === 'admin@reeves.com') {
+        await setDoc(doc(db, 'admin_credentials', loginForm.email), {
+          email: loginForm.email,
+          uid: currentUser?.uid,
+          isAdmin: true,
+          createdAt: new Date()
+        });
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+    }
+  };
+
+  if (!currentUser || !isAdmin) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-amber-900 to-slate-800 flex items-center justify-center">
         <motion.div
@@ -91,7 +123,7 @@ const Admin = () => {
                 </div>
                 <Button
                   type="submit"
-                  className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700"
+                  className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white"
                 >
                   <Lock className="w-4 h-4 mr-2" />
                   Access Dashboard
@@ -115,7 +147,7 @@ const Admin = () => {
               <p className="text-gray-600">Manage your restaurant operations</p>
             </div>
             <Button
-              onClick={() => setIsAuthenticated(false)}
+              onClick={logout}
               variant="outline"
               className="border-red-200 text-red-600 hover:bg-red-50"
             >
@@ -133,8 +165,8 @@ const Admin = () => {
               <div className="flex items-center">
                 <Calendar className="h-8 w-8 text-blue-600" />
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Today's Bookings</p>
-                  <p className="text-2xl font-bold text-gray-900">12</p>
+                  <p className="text-sm font-medium text-gray-600">Total Bookings</p>
+                  <p className="text-2xl font-bold text-gray-900">{bookings.length}</p>
                 </div>
               </div>
             </CardContent>
@@ -143,22 +175,22 @@ const Admin = () => {
           <Card>
             <CardContent className="p-6">
               <div className="flex items-center">
-                <Users className="h-8 w-8 text-green-600" />
+                <Menu className="h-8 w-8 text-green-600" />
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-600">Pre-Orders</p>
+                  <p className="text-2xl font-bold text-gray-900">{preOrders.length}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center">
+                <Users className="h-8 w-8 text-amber-600" />
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-600">Available Tables</p>
                   <p className="text-2xl font-bold text-gray-900">6</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center">
-                <Menu className="h-8 w-8 text-amber-600" />
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Menu Items</p>
-                  <p className="text-2xl font-bold text-gray-900">45</p>
                 </div>
               </div>
             </CardContent>
@@ -181,9 +213,9 @@ const Admin = () => {
         <Tabs defaultValue="bookings" className="space-y-6">
           <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="bookings">Bookings</TabsTrigger>
+            <TabsTrigger value="preorders">Pre-Orders</TabsTrigger>
             <TabsTrigger value="menu">Menu</TabsTrigger>
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
-            <TabsTrigger value="notifications">Notifications</TabsTrigger>
             <TabsTrigger value="settings">Settings</TabsTrigger>
           </TabsList>
 
@@ -193,35 +225,68 @@ const Admin = () => {
                 <CardTitle>Recent Bookings</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {bookings.map((booking) => (
-                    <div key={booking.id} className="flex items-center justify-between p-4 border rounded-lg">
-                      <div>
-                        <p className="font-medium">{booking.name}</p>
-                        <p className="text-sm text-gray-600">
-                          {booking.guests} guests • {booking.date} at {booking.time}
-                        </p>
-                        <p className="text-xs text-gray-500">ID: {booking.id}</p>
+                {isLoading ? (
+                  <p>Loading bookings...</p>
+                ) : bookings.length === 0 ? (
+                  <p className="text-gray-500">No bookings yet</p>
+                ) : (
+                  <div className="space-y-4">
+                    {bookings.map((booking) => (
+                      <div key={booking.id} className="flex items-center justify-between p-4 border rounded-lg">
+                        <div>
+                          <p className="font-medium">{booking.name}</p>
+                          <p className="text-sm text-gray-600">
+                            {booking.guestCount} guests • {booking.date} at {booking.time}
+                          </p>
+                          <p className="text-xs text-gray-500">Phone: {booking.phone}</p>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Badge
+                            variant={booking.status === 'confirmed' ? 'default' : 'secondary'}
+                            className={booking.status === 'confirmed' ? 'bg-green-100 text-green-800' : ''}
+                          >
+                            {booking.status === 'confirmed' ? (
+                              <CheckCircle className="w-3 h-3 mr-1" />
+                            ) : (
+                              <XCircle className="w-3 h-3 mr-1" />
+                            )}
+                            {booking.status || 'pending'}
+                          </Badge>
+                        </div>
                       </div>
-                      <div className="flex items-center space-x-2">
-                        <Badge
-                          variant={booking.status === 'confirmed' ? 'default' : 'secondary'}
-                          className={booking.status === 'confirmed' ? 'bg-green-100 text-green-800' : ''}
-                        >
-                          {booking.status === 'confirmed' ? (
-                            <CheckCircle className="w-3 h-3 mr-1" />
-                          ) : (
-                            <XCircle className="w-3 h-3 mr-1" />
-                          )}
-                          {booking.status}
-                        </Badge>
-                        <Button size="sm" variant="outline">
-                          View Details
-                        </Button>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="preorders">
+            <Card>
+              <CardHeader>
+                <CardTitle>Pre-Orders</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {isLoading ? (
+                  <p>Loading pre-orders...</p>
+                ) : preOrders.length === 0 ? (
+                  <p className="text-gray-500">No pre-orders yet</p>
+                ) : (
+                  <div className="space-y-4">
+                    {preOrders.map((order) => (
+                      <div key={order.id} className="flex items-center justify-between p-4 border rounded-lg">
+                        <div>
+                          <p className="font-medium">{order.customerName}</p>
+                          <p className="text-sm text-gray-600">
+                            Total: ₹{order.total} • Items: {order.items?.length || 0}
+                          </p>
+                          <p className="text-xs text-gray-500">Phone: {order.phone}</p>
+                        </div>
+                        <Badge variant="secondary">{order.status || 'pending'}</Badge>
                       </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -232,23 +297,9 @@ const Admin = () => {
                 <CardTitle>Menu Management</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {menuItems.map((item) => (
-                    <div key={item.id} className="flex items-center justify-between p-4 border rounded-lg">
-                      <div>
-                        <p className="font-medium">{item.name}</p>
-                        <p className="text-sm text-gray-600">{item.category} • ₹{item.price}</p>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <Badge variant={item.available ? 'default' : 'secondary'}>
-                          {item.available ? 'Available' : 'Out of Stock'}
-                        </Badge>
-                        <Button size="sm" variant="outline">
-                          Edit
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
+                <div className="text-center py-12">
+                  <Menu className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                  <p className="text-gray-600">Menu management coming soon...</p>
                 </div>
               </CardContent>
             </Card>
@@ -263,22 +314,6 @@ const Admin = () => {
                 <div className="text-center py-12">
                   <BarChart3 className="w-16 h-16 text-gray-400 mx-auto mb-4" />
                   <p className="text-gray-600">Analytics dashboard coming soon...</p>
-                  <p className="text-sm text-gray-500">Track revenue, popular dishes, and customer insights</p>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="notifications">
-            <Card>
-              <CardHeader>
-                <CardTitle>Notifications</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-12">
-                  <Bell className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-600">No new notifications</p>
-                  <p className="text-sm text-gray-500">Stay updated with booking alerts and system updates</p>
                 </div>
               </CardContent>
             </Card>
@@ -302,23 +337,7 @@ const Admin = () => {
                     </div>
                   </div>
                   
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label>Opening Time</Label>
-                      <Input type="time" defaultValue="11:00" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Closing Time</Label>
-                      <Input type="time" defaultValue="23:00" />
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label>Total Tables</Label>
-                    <Input type="number" defaultValue="20" />
-                  </div>
-
-                  <Button className="bg-amber-600 hover:bg-amber-700">
+                  <Button className="bg-amber-600 hover:bg-amber-700 text-white">
                     <Settings className="w-4 h-4 mr-2" />
                     Save Settings
                   </Button>
