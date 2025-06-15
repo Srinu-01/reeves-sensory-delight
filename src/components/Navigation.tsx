@@ -15,9 +15,8 @@ const Navigation = () => {
   const location = useLocation();
   
   const { scrollY } = useScroll();
-  const navOpacity = useTransform(scrollY, [0, 100], [0.95, 1]);
-  const navScale = useTransform(scrollY, [0, 100], [1, 0.98]);
-  const logoScale = useTransform(scrollY, [0, 100], [1, 0.95]);
+  const navOpacity = useTransform(scrollY, [0, 100], [0.85, 0.98]);
+  const navBlur = useTransform(scrollY, [0, 100], [20, 40]);
 
   const navigationItems = [
     { name: 'Home', path: '/', icon: Home },
@@ -80,60 +79,52 @@ const Navigation = () => {
 
   return (
     <>
-      {/* World-Class Navigation */}
-      <motion.nav
-        className="fixed top-6 left-1/2 transform -translate-x-1/2 z-50 w-[95%] max-w-7xl"
-        style={{ opacity: navOpacity, scale: navScale }}
+      {/* World-Class Navigation Header */}
+      <motion.header
+        className="fixed top-0 left-0 right-0 z-50 px-4 sm:px-6 lg:px-8 py-4"
         initial={{ y: -100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
       >
-        <div className="relative">
+        <motion.nav
+          className="max-w-7xl mx-auto"
+          style={{ 
+            opacity: navOpacity,
+            backdropFilter: `blur(${navBlur}px)`,
+          }}
+        >
           {/* Main Navigation Container */}
-          <div className="bg-white/90 backdrop-blur-2xl border border-white/20 rounded-3xl shadow-2xl shadow-black/10 overflow-hidden">
+          <div className="relative bg-white/95 backdrop-blur-xl border border-white/30 rounded-2xl lg:rounded-3xl shadow-2xl shadow-black/5 overflow-hidden">
             
-            {/* Premium gradient overlay */}
-            <div className="absolute inset-0 bg-gradient-to-r from-white/60 via-white/40 to-white/60 pointer-events-none" />
+            {/* Subtle gradient overlay */}
+            <div className="absolute inset-0 bg-gradient-to-r from-white/40 via-white/20 to-white/40 pointer-events-none" />
             
             {/* Navigation Content */}
-            <div className="relative px-8 py-4">
+            <div className="relative px-4 sm:px-6 lg:px-8 py-3 lg:py-4">
               <div className="flex items-center justify-between">
                 
-                {/* Premium Logo */}
-                <Link to="/" className="relative group">
+                {/* Premium Brand Logo */}
+                <Link to="/" className="flex-shrink-0 group">
                   <motion.div
-                    className="flex items-center space-x-3"
-                    style={{ scale: logoScale }}
-                    whileHover={{ scale: 1.05 }}
-                    transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+                    className="flex items-center space-x-2 lg:space-x-3"
+                    whileHover={{ scale: 1.02 }}
+                    transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
                   >
                     <div className="relative">
-                      <motion.h1 className="text-3xl xl:text-4xl font-serif font-bold tracking-tight">
+                      <h1 className="text-2xl sm:text-3xl lg:text-4xl font-serif font-bold tracking-tight">
                         <span className="bg-gradient-to-r from-amber-600 via-orange-500 to-amber-700 bg-clip-text text-transparent">
                           Reeves
                         </span>
-                      </motion.h1>
-                      <motion.div
-                        className="absolute -bottom-2 left-0 h-1 bg-gradient-to-r from-amber-500 to-orange-500 rounded-full"
-                        initial={{ width: 0 }}
-                        animate={{ width: '100%' }}
-                        transition={{ duration: 1, delay: 0.5 }}
-                      />
+                      </h1>
+                      <div className="absolute -bottom-1 left-0 h-0.5 bg-gradient-to-r from-amber-500 to-orange-500 rounded-full w-full opacity-80" />
                     </div>
-                    <motion.div
-                      className="w-3 h-3 bg-gradient-to-r from-amber-400 to-orange-500 rounded-full shadow-lg"
-                      animate={{ 
-                        scale: [1, 1.2, 1],
-                        opacity: [0.8, 1, 0.8]
-                      }}
-                      transition={{ duration: 2, repeat: Infinity }}
-                    />
+                    <div className="w-2 h-2 lg:w-3 lg:h-3 bg-gradient-to-r from-amber-400 to-orange-500 rounded-full shadow-lg animate-pulse" />
                   </motion.div>
                 </Link>
 
-                {/* Desktop Navigation Pills */}
-                <div className="hidden xl:flex items-center justify-center flex-1 max-w-4xl mx-16">
-                  <div className="flex items-center space-x-2 bg-slate-100/60 backdrop-blur-sm rounded-full px-8 py-4 border border-slate-200/50 shadow-lg">
+                {/* Desktop Navigation Menu */}
+                <div className="hidden lg:flex items-center justify-center flex-1 max-w-3xl mx-8">
+                  <nav className="flex items-center space-x-1 bg-gray-50/80 backdrop-blur-sm rounded-2xl px-2 py-2 border border-gray-200/50 shadow-inner">
                     {navigationItems.map((item, index) => {
                       const IconComponent = item.icon;
                       const isActive = location.pathname === item.path;
@@ -141,37 +132,28 @@ const Navigation = () => {
                       return (
                         <motion.div
                           key={item.name}
-                          initial={{ opacity: 0, y: -20 }}
+                          initial={{ opacity: 0, y: -10 }}
                           animate={{ opacity: 1, y: 0 }}
-                          transition={{ duration: 0.5, delay: index * 0.1 }}
+                          transition={{ duration: 0.3, delay: index * 0.05 }}
                         >
                           <Link
                             to={item.path}
-                            className={`relative px-6 py-3 text-sm font-semibold transition-all duration-300 group rounded-full ${
+                            className={`relative px-4 py-2.5 text-sm font-semibold transition-all duration-300 rounded-xl group ${
                               isActive 
-                                ? 'text-white' 
-                                : 'text-slate-700 hover:text-slate-900'
+                                ? 'text-white shadow-lg' 
+                                : 'text-gray-700 hover:text-gray-900 hover:bg-white/70'
                             }`}
                           >
-                            {/* Active background with perfect animation */}
+                            {/* Active state background */}
                             {isActive && (
                               <motion.div
-                                className="absolute inset-0 bg-gradient-to-r from-amber-500 to-orange-500 rounded-full shadow-xl shadow-amber-500/40"
-                                layoutId="activeNavTab"
-                                transition={{ type: "spring", bounce: 0.15, duration: 0.8 }}
+                                className="absolute inset-0 bg-gradient-to-r from-amber-500 to-orange-500 rounded-xl shadow-lg shadow-amber-500/25"
+                                layoutId="activeTab"
+                                transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
                               />
                             )}
                             
-                            {/* Hover background */}
-                            {!isActive && (
-                              <motion.div
-                                className="absolute inset-0 bg-white/70 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 shadow-md"
-                                whileHover={{ scale: 1.05 }}
-                                transition={{ duration: 0.2 }}
-                              />
-                            )}
-                            
-                            <div className="relative z-10 flex items-center space-x-2.5">
+                            <div className="relative z-10 flex items-center space-x-2">
                               <IconComponent className="w-4 h-4" />
                               <span>{item.name}</span>
                             </div>
@@ -179,105 +161,104 @@ const Navigation = () => {
                         </motion.div>
                       );
                     })}
-                  </div>
+                  </nav>
                 </div>
                 
-                {/* Desktop Right Actions */}
-                <div className="hidden xl:flex items-center space-x-4">
+                {/* Desktop Actions */}
+                <div className="hidden lg:flex items-center space-x-3">
                   
-                  {/* Contact Actions with premium design */}
-                  <div className="flex items-center space-x-3">
+                  {/* Contact Actions */}
+                  <div className="flex items-center space-x-2">
                     <motion.button
                       onClick={handleCall}
-                      className="group relative p-4 rounded-2xl bg-gradient-to-br from-green-50 to-emerald-100 border border-green-200/60 text-green-700 hover:from-green-100 hover:to-emerald-200 transition-all duration-300 shadow-lg hover:shadow-xl hover:shadow-green-200/50"
-                      whileHover={{ scale: 1.08, y: -2 }}
-                      whileTap={{ scale: 0.95 }}
+                      className="p-3 rounded-xl bg-green-50 border border-green-100 text-green-600 hover:bg-green-100 hover:border-green-200 transition-all duration-200 shadow-sm hover:shadow-md"
+                      whileHover={{ scale: 1.05, y: -1 }}
+                      whileTap={{ scale: 0.98 }}
                     >
-                      <Phone className="w-5 h-5" />
-                      <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full animate-pulse shadow-lg" />
+                      <Phone className="w-4 h-4" />
                     </motion.button>
                     
                     <motion.button
                       onClick={handleWhatsApp}
-                      className="group relative p-4 rounded-2xl bg-gradient-to-br from-green-50 to-emerald-100 border border-green-200/60 text-green-700 hover:from-green-100 hover:to-emerald-200 transition-all duration-300 shadow-lg hover:shadow-xl hover:shadow-green-200/50"
-                      whileHover={{ scale: 1.08, y: -2 }}
-                      whileTap={{ scale: 0.95 }}
+                      className="p-3 rounded-xl bg-green-50 border border-green-100 text-green-600 hover:bg-green-100 hover:border-green-200 transition-all duration-200 shadow-sm hover:shadow-md"
+                      whileHover={{ scale: 1.05, y: -1 }}
+                      whileTap={{ scale: 0.98 }}
                     >
-                      <MessageSquare className="w-5 h-5" />
+                      <MessageSquare className="w-4 h-4" />
                     </motion.button>
                   </div>
                 
-                  {/* Premium User Menu */}
+                  {/* User Menu */}
                   {currentUser ? (
                     <div className="relative user-menu-container">
                       <motion.button
                         onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                        className="flex items-center space-x-4 px-6 py-3 rounded-2xl bg-gradient-to-br from-slate-900 to-slate-800 text-white hover:from-slate-800 hover:to-slate-700 transition-all duration-300 shadow-xl hover:shadow-2xl hover:shadow-slate-800/30 border border-slate-700/50"
-                        whileHover={{ scale: 1.05, y: -2 }}
+                        className="flex items-center space-x-3 px-4 py-2.5 rounded-xl bg-gray-900 text-white hover:bg-gray-800 transition-all duration-200 shadow-lg hover:shadow-xl"
+                        whileHover={{ scale: 1.02, y: -1 }}
                         whileTap={{ scale: 0.98 }}
                       >
-                        <div className="w-10 h-10 bg-gradient-to-br from-amber-400 to-orange-500 rounded-xl flex items-center justify-center shadow-lg">
-                          <User className="w-5 h-5 text-white" />
+                        <div className="w-8 h-8 bg-gradient-to-br from-amber-400 to-orange-500 rounded-lg flex items-center justify-center">
+                          <User className="w-4 h-4 text-white" />
                         </div>
-                        <div className="flex flex-col items-start">
-                          <span className="font-bold text-sm">Account</span>
-                          <span className="text-xs text-slate-300">
+                        <div className="hidden xl:flex flex-col items-start">
+                          <span className="text-sm font-medium">Account</span>
+                          <span className="text-xs text-gray-300">
                             {isAdmin ? 'Admin' : 'Member'}
                           </span>
                         </div>
-                        <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${isUserMenuOpen ? 'rotate-180' : ''}`} />
+                        <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${isUserMenuOpen ? 'rotate-180' : ''}`} />
                       </motion.button>
                       
                       <AnimatePresence>
                         {isUserMenuOpen && (
                           <motion.div
-                            className="absolute right-0 top-full mt-6 w-80 bg-white/95 backdrop-blur-2xl rounded-3xl shadow-2xl border border-white/30 overflow-hidden"
-                            initial={{ opacity: 0, y: -20, scale: 0.9 }}
+                            className="absolute right-0 top-full mt-2 w-72 bg-white/98 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/30 overflow-hidden"
+                            initial={{ opacity: 0, y: -10, scale: 0.95 }}
                             animate={{ opacity: 1, y: 0, scale: 1 }}
-                            exit={{ opacity: 0, y: -20, scale: 0.9 }}
-                            transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+                            exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                            transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
                           >
-                            <div className="p-8 border-b border-slate-100/80 bg-gradient-to-br from-slate-50/80 to-amber-50/50">
-                              <div className="flex items-center space-x-4">
-                                <div className="w-16 h-16 bg-gradient-to-br from-amber-400 to-orange-500 rounded-2xl flex items-center justify-center shadow-xl">
-                                  <User className="w-8 h-8 text-white" />
+                            <div className="p-6 border-b border-gray-100 bg-gradient-to-br from-gray-50/50 to-amber-50/30">
+                              <div className="flex items-center space-x-3">
+                                <div className="w-12 h-12 bg-gradient-to-br from-amber-400 to-orange-500 rounded-xl flex items-center justify-center shadow-lg">
+                                  <User className="w-6 h-6 text-white" />
                                 </div>
                                 <div>
-                                  <p className="font-bold text-slate-900 truncate">{currentUser.email}</p>
-                                  <p className="text-sm text-slate-600 mt-2">
+                                  <p className="font-semibold text-gray-900 truncate">{currentUser.email}</p>
+                                  <p className="text-sm text-gray-600">
                                     {isAdmin ? '👑 Administrator' : '🍽️ Valued Guest'}
                                   </p>
                                 </div>
                               </div>
                             </div>
                             
-                            <div className="py-4">
+                            <div className="py-2">
                               <Link
                                 to="/profile"
-                                className="flex items-center space-x-4 px-8 py-5 text-slate-700 hover:bg-gradient-to-r hover:from-amber-50 hover:to-orange-50 hover:text-amber-700 transition-all duration-300 group"
+                                className="flex items-center space-x-3 px-6 py-3 text-gray-700 hover:bg-amber-50 hover:text-amber-700 transition-colors duration-150"
                                 onClick={() => setIsUserMenuOpen(false)}
                               >
-                                <User className="w-6 h-6 group-hover:scale-110 transition-transform" />
-                                <span className="font-semibold">My Profile</span>
+                                <User className="w-5 h-5" />
+                                <span className="font-medium">My Profile</span>
                               </Link>
                               
                               {isAdmin && (
                                 <Link
                                   to="/admin"
-                                  className="flex items-center space-x-4 px-8 py-5 text-slate-700 hover:bg-gradient-to-r hover:from-amber-50 hover:to-orange-50 hover:text-amber-700 transition-all duration-300 group"
+                                  className="flex items-center space-x-3 px-6 py-3 text-gray-700 hover:bg-amber-50 hover:text-amber-700 transition-colors duration-150"
                                   onClick={() => setIsUserMenuOpen(false)}
                                 >
-                                  <Settings className="w-6 h-6 group-hover:scale-110 transition-transform" />
-                                  <span className="font-semibold">Admin Dashboard</span>
+                                  <Settings className="w-5 h-5" />
+                                  <span className="font-medium">Admin Dashboard</span>
                                 </Link>
                               )}
                               
                               <button
                                 onClick={handleLogout}
-                                className="flex items-center space-x-4 px-8 py-5 text-red-600 hover:bg-red-50 transition-all duration-300 w-full text-left group"
+                                className="flex items-center space-x-3 px-6 py-3 text-red-600 hover:bg-red-50 transition-colors duration-150 w-full text-left"
                               >
-                                <LogOut className="w-6 h-6 group-hover:scale-110 transition-transform" />
-                                <span className="font-semibold">Sign Out</span>
+                                <LogOut className="w-5 h-5" />
+                                <span className="font-medium">Sign Out</span>
                               </button>
                             </div>
                           </motion.div>
@@ -286,12 +267,12 @@ const Navigation = () => {
                     </div>
                   ) : (
                     <motion.div
-                      whileHover={{ scale: 1.05, y: -2 }}
+                      whileHover={{ scale: 1.02, y: -1 }}
                       whileTap={{ scale: 0.98 }}
                     >
                       <Button 
                         onClick={() => setIsAuthModalOpen(true)} 
-                        className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white border-0 shadow-xl hover:shadow-2xl hover:shadow-amber-500/40 transition-all duration-300 rounded-2xl px-10 py-4 font-bold text-base"
+                        className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-200 rounded-xl px-6 py-2.5 font-semibold"
                       >
                         Sign In
                       </Button>
@@ -301,63 +282,63 @@ const Navigation = () => {
 
                 {/* Mobile Menu Button */}
                 <motion.button
-                  className="xl:hidden p-4 rounded-2xl bg-slate-100/80 backdrop-blur-sm border border-slate-200/60 text-slate-700 hover:bg-white/90 transition-all duration-300 shadow-lg hover:shadow-xl mobile-menu-button"
+                  className="lg:hidden p-3 rounded-xl bg-gray-100/80 backdrop-blur-sm border border-gray-200/60 text-gray-700 hover:bg-gray-200/80 transition-all duration-200 shadow-sm mobile-menu-button"
                   onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                  whileHover={{ scale: 1.08 }}
+                  whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
                   <motion.div
                     animate={{ rotate: isMobileMenuOpen ? 180 : 0 }}
-                    transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+                    transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
                   >
-                    {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+                    {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
                   </motion.div>
                 </motion.button>
               </div>
             </div>
           </div>
-        </div>
-      </motion.nav>
+        </motion.nav>
+      </motion.header>
 
-      {/* Enhanced Mobile Navigation */}
+      {/* Mobile Navigation */}
       <AnimatePresence>
         {isMobileMenuOpen && (
           <>
-            {/* Premium Backdrop */}
+            {/* Backdrop */}
             <motion.div
-              className="fixed inset-0 bg-slate-900/70 backdrop-blur-md z-40 xl:hidden"
+              className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 lg:hidden"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.4 }}
+              transition={{ duration: 0.3 }}
             />
             
-            {/* World-Class Mobile Menu */}
+            {/* Mobile Menu */}
             <motion.div
-              className="fixed top-0 right-0 bottom-0 w-96 max-w-[90vw] bg-white/95 backdrop-blur-2xl z-50 xl:hidden shadow-2xl mobile-menu-container border-l border-white/30"
+              className="fixed top-0 right-0 bottom-0 w-80 max-w-[85vw] bg-white/98 backdrop-blur-xl z-50 lg:hidden shadow-2xl mobile-menu-container border-l border-white/30"
               initial={{ x: '100%' }}
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
-              transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+              transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
             >
-              <div className="p-8 h-full overflow-y-auto">
+              <div className="p-6 h-full overflow-y-auto">
                 
                 {/* Mobile Header */}
-                <div className="flex items-center justify-between mb-10">
+                <div className="flex items-center justify-between mb-8">
                   <div>
-                    <h2 className="text-3xl font-serif font-bold text-slate-900">Menu</h2>
-                    <p className="text-base text-slate-600 mt-2">Navigate Reeves</p>
+                    <h2 className="text-2xl font-serif font-bold text-gray-900">Menu</h2>
+                    <p className="text-sm text-gray-600 mt-1">Navigate Reeves</p>
                   </div>
                   <button
                     onClick={() => setIsMobileMenuOpen(false)}
-                    className="p-3 rounded-2xl hover:bg-slate-100 transition-colors"
+                    className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
                   >
-                    <X className="w-7 h-7" />
+                    <X className="w-6 h-6" />
                   </button>
                 </div>
 
                 {/* Mobile Navigation Items */}
-                <div className="space-y-3 mb-10">
+                <div className="space-y-2 mb-8">
                   {navigationItems.map((item, index) => {
                     const IconComponent = item.icon;
                     const isActive = location.pathname === item.path;
@@ -365,23 +346,23 @@ const Navigation = () => {
                     return (
                       <motion.div
                         key={item.name}
-                        initial={{ x: 80, opacity: 0 }}
+                        initial={{ x: 50, opacity: 0 }}
                         animate={{ x: 0, opacity: 1 }}
-                        transition={{ duration: 0.4, delay: index * 0.1 }}
+                        transition={{ duration: 0.3, delay: index * 0.05 }}
                       >
                         <Link
                           to={item.path}
-                          className={`flex items-center space-x-5 px-6 py-5 rounded-2xl transition-all duration-300 ${
+                          className={`flex items-center space-x-4 px-4 py-3 rounded-xl transition-all duration-200 ${
                             isActive 
-                              ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-xl shadow-amber-500/30' 
-                              : 'text-slate-700 hover:bg-gradient-to-r hover:from-slate-50 hover:to-amber-50 hover:text-amber-700'
+                              ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-lg' 
+                              : 'text-gray-700 hover:bg-gray-50'
                           }`}
                           onClick={() => setIsMobileMenuOpen(false)}
                         >
-                          <div className={`p-3 rounded-xl ${isActive ? 'bg-white/20' : 'bg-slate-100'}`}>
-                            <IconComponent className="w-6 h-6" />
+                          <div className={`p-2 rounded-lg ${isActive ? 'bg-white/20' : 'bg-gray-100'}`}>
+                            <IconComponent className="w-5 h-5" />
                           </div>
-                          <span className="font-bold text-lg">{item.name}</span>
+                          <span className="font-semibold">{item.name}</span>
                         </Link>
                       </motion.div>
                     );
@@ -390,45 +371,45 @@ const Navigation = () => {
 
                 {/* Mobile Contact Buttons */}
                 <motion.div
-                  className="grid grid-cols-2 gap-4 mb-10"
-                  initial={{ y: 40, opacity: 0 }}
+                  className="grid grid-cols-2 gap-3 mb-8"
+                  initial={{ y: 30, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
-                  transition={{ duration: 0.4, delay: 0.6 }}
+                  transition={{ duration: 0.3, delay: 0.3 }}
                 >
                   <Button
                     onClick={handleCall}
                     variant="outline"
-                    className="flex items-center justify-center gap-3 border-green-200 text-green-600 hover:bg-green-50 h-16 rounded-2xl font-bold text-base"
+                    className="flex items-center justify-center gap-2 border-green-200 text-green-600 hover:bg-green-50 h-12 rounded-xl font-semibold"
                   >
-                    <Phone className="w-6 h-6" />
-                    Call Us
+                    <Phone className="w-4 h-4" />
+                    Call
                   </Button>
                   <Button
                     onClick={handleWhatsApp}
                     variant="outline"
-                    className="flex items-center justify-center gap-3 border-green-200 text-green-600 hover:bg-green-50 h-16 rounded-2xl font-bold text-base"
+                    className="flex items-center justify-center gap-2 border-green-200 text-green-600 hover:bg-green-50 h-12 rounded-xl font-semibold"
                   >
-                    <MessageSquare className="w-6 h-6" />
+                    <MessageSquare className="w-4 h-4" />
                     WhatsApp
                   </Button>
                 </motion.div>
 
                 {/* Mobile User Section */}
                 <motion.div
-                  initial={{ y: 40, opacity: 0 }}
+                  initial={{ y: 30, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
-                  transition={{ duration: 0.4, delay: 0.7 }}
+                  transition={{ duration: 0.3, delay: 0.4 }}
                 >
                   {currentUser ? (
-                    <div className="space-y-6">
-                      <div className="p-6 bg-gradient-to-br from-slate-50 to-amber-50/70 rounded-3xl border border-slate-200/50 shadow-lg">
-                        <div className="flex items-center space-x-4">
-                          <div className="w-16 h-16 bg-gradient-to-br from-amber-400 to-orange-500 rounded-2xl flex items-center justify-center shadow-xl">
-                            <User className="w-8 h-8 text-white" />
+                    <div className="space-y-4">
+                      <div className="p-4 bg-gradient-to-br from-gray-50 to-amber-50/50 rounded-2xl border border-gray-200/50">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-12 h-12 bg-gradient-to-br from-amber-400 to-orange-500 rounded-xl flex items-center justify-center shadow-lg">
+                            <User className="w-6 h-6 text-white" />
                           </div>
                           <div>
-                            <p className="font-bold text-slate-900 truncate text-lg">{currentUser.email}</p>
-                            <p className="text-base text-slate-600 mt-2">
+                            <p className="font-semibold text-gray-900 truncate">{currentUser.email}</p>
+                            <p className="text-sm text-gray-600">
                               {isAdmin ? '👑 Administrator' : '🍽️ Valued Guest'}
                             </p>
                           </div>
@@ -437,30 +418,30 @@ const Navigation = () => {
                       
                       <Link
                         to="/profile"
-                        className="flex items-center space-x-4 px-6 py-5 text-slate-700 hover:bg-amber-50 hover:text-amber-700 transition-colors duration-200 rounded-2xl"
+                        className="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-amber-50 hover:text-amber-700 transition-colors duration-150 rounded-xl"
                         onClick={() => setIsMobileMenuOpen(false)}
                       >
-                        <User className="w-6 h-6" />
-                        <span className="font-bold text-lg">My Profile</span>
+                        <User className="w-5 h-5" />
+                        <span className="font-semibold">My Profile</span>
                       </Link>
                       
                       {isAdmin && (
                         <Link
                           to="/admin"
-                          className="flex items-center space-x-4 px-6 py-5 text-slate-700 hover:bg-amber-50 hover:text-amber-700 transition-colors duration-200 rounded-2xl"
+                          className="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-amber-50 hover:text-amber-700 transition-colors duration-150 rounded-xl"
                           onClick={() => setIsMobileMenuOpen(false)}
                         >
-                          <Settings className="w-6 h-6" />
-                          <span className="font-bold text-lg">Admin Dashboard</span>
+                          <Settings className="w-5 h-5" />
+                          <span className="font-semibold">Admin Dashboard</span>
                         </Link>
                       )}
                       
                       <button
                         onClick={handleLogout}
-                        className="flex items-center space-x-4 px-6 py-5 text-red-600 hover:bg-red-50 transition-colors duration-200 w-full text-left rounded-2xl"
+                        className="flex items-center space-x-3 px-4 py-3 text-red-600 hover:bg-red-50 transition-colors duration-150 w-full text-left rounded-xl"
                       >
-                        <LogOut className="w-6 h-6" />
-                        <span className="font-bold text-lg">Sign Out</span>
+                        <LogOut className="w-5 h-5" />
+                        <span className="font-semibold">Sign Out</span>
                       </button>
                     </div>
                   ) : (
@@ -469,7 +450,7 @@ const Navigation = () => {
                         setIsAuthModalOpen(true);
                         setIsMobileMenuOpen(false);
                       }} 
-                      className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white rounded-3xl h-16 font-bold text-xl shadow-xl hover:shadow-2xl transition-all duration-300"
+                      className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white rounded-2xl h-14 font-bold text-lg shadow-lg hover:shadow-xl transition-all duration-200"
                     >
                       Sign In
                     </Button>
