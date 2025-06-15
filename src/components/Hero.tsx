@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
@@ -218,28 +217,6 @@ const Hero = () => {
             whileHover={{ scale: 1.2 }}
           />
         ))}
-      </motion.div>
-      
-      {/* Fixed Scroll Indicator */}
-      <motion.div
-        className="absolute text-center"
-        style={{ 
-          bottom: '3%',
-          left: '50%',
-          transform: 'translateX(-50%)'
-        }}
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 1, delay: 2 }}
-      >
-        <div className="text-white">
-          <p className="text-sm mb-4 tracking-wide">SCROLL TO DISCOVER</p>
-          <motion.div
-            className="w-px h-16 bg-gradient-to-b from-amber-400 to-transparent mx-auto"
-            animate={{ scaleY: [1, 0.5, 1] }}
-            transition={{ duration: 2, repeat: Infinity }}
-          />
-        </div>
       </motion.div>
     </section>
   );
