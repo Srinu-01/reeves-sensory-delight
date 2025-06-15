@@ -13,6 +13,7 @@ import Admin from "./pages/Admin";
 import PreOrder from "./pages/PreOrder";
 import Profile from "./pages/Profile";
 import Reservation from "./pages/Reservation";
+import Gallery from "./pages/Gallery";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -33,6 +34,7 @@ const App = () => (
             <Route path="/preorder" element={<PreOrder />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/reservation" element={<Reservation />} />
+            <Route path="/gallery" element={<Gallery />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

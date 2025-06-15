@@ -87,22 +87,28 @@ const Hero = () => {
 
   return (
     <section className="relative h-screen flex items-center justify-center overflow-hidden">
-      {/* Background Image Slideshow */}
+      {/* Background Image Slideshow with improved transitions */}
       <div className="absolute inset-0">
-        {heroImages.map((image, index) => (
-          <motion.div
-            key={index}
-            className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-            style={{
-              backgroundImage: `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.6)), url('${image}')`
-            }}
-            initial={{ opacity: 0 }}
-            animate={{ 
-              opacity: index === currentImageIndex ? 1 : 0 
-            }}
-            transition={{ duration: 1.5, ease: "easeInOut" }}
-          />
-        ))}
+        <AnimatePresence mode="wait">
+          {heroImages.map((image, index) => (
+            index === currentImageIndex && (
+              <motion.div
+                key={index}
+                className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+                style={{
+                  backgroundImage: `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.6)), url('${image}')`
+                }}
+                initial={{ opacity: 0, scale: 1.1 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ 
+                  duration: 2, 
+                  ease: [0.4, 0, 0.2, 1]
+                }}
+              />
+            )
+          ))}
+        </AnimatePresence>
       </div>
       
       {/* Parallax Overlay */}
@@ -214,10 +220,14 @@ const Hero = () => {
         ))}
       </motion.div>
       
-      {/* Scroll Indicator - Fixed positioning */}
+      {/* Fixed Scroll Indicator */}
       <motion.div
-        className="absolute left-1/2 transform -translate-x-1/2 text-center"
-        style={{ bottom: '3%' }}
+        className="absolute text-center"
+        style={{ 
+          bottom: '3%',
+          left: '50%',
+          transform: 'translateX(-50%)'
+        }}
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 1, delay: 2 }}
