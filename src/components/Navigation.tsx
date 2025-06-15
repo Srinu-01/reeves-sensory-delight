@@ -96,7 +96,7 @@ const Navigation = () => {
         {/* Adaptive borders for visibility */}
         <motion.div 
           className="absolute inset-0 rounded-none border border-white/20"
-          style={{ borderOpacity }}
+          style={{ opacity: borderOpacity }}
         />
         <motion.div 
           className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-amber-400/60 to-transparent"
