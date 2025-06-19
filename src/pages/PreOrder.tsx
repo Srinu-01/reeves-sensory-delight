@@ -1,367 +1,429 @@
 
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Minus, ShoppingCart, X, Star } from 'lucide-react';
+import { CheckCircle, Upload, CreditCard, Clock, Phone } from 'lucide-react';
 import { toast } from 'sonner';
+import { useAuth } from '@/contexts/AuthContext';
+import { AuthModal } from '@/components/AuthModal';
+import { collection, addDoc, doc, getDoc } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
+import Navigation from '@/components/Navigation';
+import Footer from '@/components/Footer';
 
-interface MenuItem {
+interface CartItem {
   id: string;
   name: string;
-  description: string;
   price: number;
-  image: string;
-  category: string;
-  rating: number;
-  isSpecial?: boolean;
-}
-
-interface CartItem extends MenuItem {
   quantity: number;
+  isVeg?: boolean;
 }
 
 const PreOrder = () => {
-  const [selectedCategory, setSelectedCategory] = useState('all');
+  const { currentUser } = useAuth();
   const [cart, setCart] = useState<CartItem[]>([]);
-  const [showCart, setShowCart] = useState(false);
+  const [step, setStep] = useState(1); // 1: Review, 2: Details, 3: Payment, 4: Success
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [orderId, setOrderId] = useState('');
+  
+  const [orderDetails, setOrderDetails] = useState({
+    name: '',
+    phone: '',
+    email: '',
+    pickupTime: '',
+    specialRequests: ''
+  });
 
-  const menuItems: MenuItem[] = [
-    {
-      id: '1',
-      name: 'Royal Hyderabadi Biryani',
-      description: 'Aromatic basmati rice layered with tender mutton, slow-cooked with saffron',
-      price: 589,
-      image: 'https://images.unsplash.com/photo-1563379091339-03246963d293?q=80&w=2070&auto=format&fit=crop',
-      category: 'biryani',
-      rating: 4.9,
-      isSpecial: true
-    },
-    {
-      id: '2',
-      name: 'Coastal Fish Curry',
-      description: 'Fresh catch in coconut-based curry with traditional Andhra spices',
-      price: 425,
-      image: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?q=80&w=2081&auto=format&fit=crop',
-      category: 'curry',
-      rating: 4.8
-    },
-    {
-      id: '3',
-      name: 'Butter Chicken Supreme',
-      description: 'Tender chicken in rich, creamy tomato-based sauce',
-      price: 345,
-      image: 'https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?q=80&w=2084&auto=format&fit=crop',
-      category: 'curry',
-      rating: 4.7
-    },
-    {
-      id: '4',
-      name: 'Paneer Makhani',
-      description: 'Cottage cheese in rich, creamy tomato and cashew gravy',
-      price: 295,
-      image: 'https://images.unsplash.com/photo-1631452180519-c014fe946bc7?q=80&w=2127&auto=format&fit=crop',
-      category: 'vegetarian',
-      rating: 4.6
+  useEffect(() => {
+    // Load cart from localStorage
+    const savedCart = localStorage.getItem('reeves-cart');
+    if (savedCart) {
+      setCart(JSON.parse(savedCart));
     }
-  ];
 
-  const categories = [
-    { id: 'all', name: 'All Items' },
-    { id: 'biryani', name: 'Biryani' },
-    { id: 'curry', name: 'Curries' },
-    { id: 'vegetarian', name: 'Vegetarian' }
-  ];
-
-  const filteredItems = selectedCategory === 'all' 
-    ? menuItems 
-    : menuItems.filter(item => item.category === selectedCategory);
-
-  const addToCart = (item: MenuItem) => {
-    setCart(prev => {
-      const existingItem = prev.find(cartItem => cartItem.id === item.id);
-      if (existingItem) {
-        return prev.map(cartItem =>
-          cartItem.id === item.id
-            ? { ...cartItem, quantity: cartItem.quantity + 1 }
-            : cartItem
-        );
-      } else {
-        return [...prev, { ...item, quantity: 1 }];
+    // Check if coming from checkout
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('checkout') === 'true' && savedCart) {
+      const parsedCart = JSON.parse(savedCart);
+      if (parsedCart.length > 0) {
+        setStep(2);
       }
-    });
-    toast.success(`${item.name} added to cart!`);
-  };
-
-  const updateQuantity = (id: string, quantity: number) => {
-    if (quantity <= 0) {
-      removeFromCart(id);
-    } else {
-      setCart(prev =>
-        prev.map(item =>
-          item.id === id ? { ...item, quantity } : item
-        )
-      );
     }
-  };
 
-  const removeFromCart = (id: string) => {
-    setCart(prev => prev.filter(item => item.id !== id));
+    // Pre-fill user details if logged in
+    if (currentUser) {
+      loadUserDetails();
+    }
+  }, [currentUser]);
+
+  const loadUserDetails = async () => {
+    if (!currentUser?.uid) return;
+    
+    try {
+      const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
+      if (userDoc.exists()) {
+        const userData = userDoc.data();
+        setOrderDetails(prev => ({
+          ...prev,
+          name: userData.name || '',
+          phone: userData.phone || '',
+          email: userData.email || currentUser.email || ''
+        }));
+      }
+    } catch (error) {
+      console.error('Error loading user details:', error);
+    }
   };
 
   const getTotalPrice = () => {
     return cart.reduce((total, item) => total + (item.price * item.quantity), 0);
   };
 
-  const getTotalItems = () => {
-    return cart.reduce((total, item) => total + item.quantity, 0);
+  const generateOrderId = () => {
+    const timestamp = Date.now().toString().slice(-6);
+    const random = Math.random().toString(36).substr(2, 4).toUpperCase();
+    return `RV${timestamp}${random}`;
   };
 
-  const handleCheckout = () => {
-    if (cart.length === 0) {
-      toast.error('Your cart is empty!');
+  const generateUPILink = () => {
+    const amount = getTotalPrice();
+    const upiId = '9849834102@ybl';
+    const merchantName = 'Reeves Restaurant';
+    const note = `Order ${orderId} - ${orderDetails.name} - Pickup: ${orderDetails.pickupTime}`;
+    
+    return `upi://pay?pa=${upiId}&pn=${encodeURIComponent(merchantName)}&am=${amount}&cu=INR&tn=${encodeURIComponent(note)}`;
+  };
+
+  const handleStepTwo = () => {
+    if (!currentUser) {
+      setIsAuthModalOpen(true);
       return;
     }
     
-    // Simulate order placement
-    toast.success('🎉 Pre-order placed successfully!', {
-      description: `Total: ₹${getTotalPrice()}. You'll receive a confirmation shortly.`,
-      duration: 5000,
-    });
+    if (cart.length === 0) {
+      toast.error('Your cart is empty!');
+      window.location.href = '/menu';
+      return;
+    }
     
-    setCart([]);
-    setShowCart(false);
+    setStep(2);
   };
 
-  const renderStars = (rating: number) => {
-    return Array.from({ length: 5 }, (_, i) => (
-      <Star
-        key={i}
-        className={`w-4 h-4 ${
-          i < Math.floor(rating) ? 'text-amber-400 fill-amber-400' : 'text-gray-300'
-        }`}
-      />
-    ));
+  const handleStepThree = () => {
+    if (!orderDetails.name || !orderDetails.phone || !orderDetails.pickupTime) {
+      toast.error('Please fill in all required fields');
+      return;
+    }
+    
+    const newOrderId = generateOrderId();
+    setOrderId(newOrderId);
+    setStep(3);
   };
 
-  return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white pt-24">
-      {/* Header */}
-      <div className="container mx-auto px-4 py-16">
-        <motion.div
-          className="text-center mb-16"
-          initial={{ opacity: 0, y: 50 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1 }}
-        >
-          <h1 className="text-5xl font-serif text-slate-800 mb-6">Pre-Order Your Feast</h1>
-          <div className="h-px w-32 bg-gradient-to-r from-transparent via-amber-500 to-transparent mx-auto mb-6"></div>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-            Skip the wait and pre-order your favorite dishes. Your meal will be ready when you arrive.
-          </p>
-        </motion.div>
+  const handlePaymentSubmit = async (paymentScreenshot?: File) => {
+    setIsLoading(true);
+    
+    try {
+      // Save order to Firestore
+      const orderData = {
+        orderId,
+        userId: currentUser?.uid,
+        userEmail: currentUser?.email,
+        customerName: orderDetails.name,
+        phone: orderDetails.phone,
+        pickupTime: orderDetails.pickupTime,
+        specialRequests: orderDetails.specialRequests,
+        items: cart,
+        totalAmount: getTotalPrice(),
+        status: 'pending',
+        paymentStatus: paymentScreenshot ? 'screenshot_uploaded' : 'pending',
+        createdAt: new Date(),
+        // If screenshot is uploaded, you would upload to Cloudinary and store URL here
+        // paymentScreenshotUrl: uploadedUrl
+      };
 
-        {/* Cart Toggle */}
-        <motion.div
-          className="fixed top-24 right-6 z-50"
-          initial={{ opacity: 0, x: 50 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.8 }}
-        >
-          <Button
-            onClick={() => setShowCart(true)}
-            className="relative bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 rounded-full p-4 shadow-xl"
-          >
-            <ShoppingCart className="w-6 h-6" />
-            {getTotalItems() > 0 && (
-              <Badge className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full min-w-6 h-6">
-                {getTotalItems()}
-              </Badge>
-            )}
-          </Button>
-        </motion.div>
+      await addDoc(collection(db, 'preorders'), orderData);
+      
+      // Clear cart
+      localStorage.removeItem('reeves-cart');
+      setCart([]);
+      
+      setStep(4);
+      toast.success('🎉 Pre-order placed successfully!');
+      
+    } catch (error) {
+      console.error('Error placing order:', error);
+      toast.error('Failed to place order. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-        {/* Category Filters */}
-        <motion.div
-          className="flex flex-wrap justify-center gap-4 mb-12"
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
-        >
-          {categories.map((category) => (
-            <Button
-              key={category.id}
-              onClick={() => setSelectedCategory(category.id)}
-              variant={selectedCategory === category.id ? "default" : "outline"}
-              className={`px-6 py-3 rounded-full transition-all duration-300 ${
-                selectedCategory === category.id
-                  ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-lg'
-                  : 'border-amber-300 text-amber-700 hover:bg-amber-50'
-              }`}
-            >
-              {category.name}
-            </Button>
-          ))}
-        </motion.div>
-
-        {/* Menu Items Grid */}
-        <motion.div
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
-          layout
-        >
-          <AnimatePresence>
-            {filteredItems.map((item, index) => (
-              <motion.div
-                key={item.id}
-                layout
-                initial={{ opacity: 0, y: 50 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -50 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-              >
-                <Card className="group overflow-hidden hover:shadow-2xl transition-all duration-500 border-amber-200/50 hover:border-amber-300">
-                  <div className="relative overflow-hidden">
-                    <motion.img
-                      src={item.image}
-                      alt={item.name}
-                      className="w-full h-48 object-cover transition-transform duration-700 group-hover:scale-110"
-                    />
-                    {item.isSpecial && (
-                      <Badge className="absolute top-4 left-4 bg-red-500 text-white">
-                        Today's Special
-                      </Badge>
-                    )}
-                    <div className="absolute top-4 right-4 flex space-x-1">
-                      {renderStars(item.rating)}
-                    </div>
-                  </div>
-                  
-                  <CardContent className="p-6">
-                    <div className="flex justify-between items-start mb-3">
-                      <h3 className="text-xl font-serif text-slate-800 group-hover:text-amber-600 transition-colors">
-                        {item.name}
-                      </h3>
-                      <span className="text-2xl font-bold text-amber-600">
-                        ₹{item.price}
-                      </span>
-                    </div>
-                    
-                    <p className="text-gray-600 text-sm leading-relaxed mb-4">
-                      {item.description}
-                    </p>
-                    
-                    <motion.div
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                    >
-                      <Button
-                        onClick={() => addToCart(item)}
-                        className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white rounded-lg transition-all duration-300"
-                      >
-                        <Plus className="w-4 h-4 mr-2" />
-                        Add to Cart
-                      </Button>
-                    </motion.div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-          </AnimatePresence>
-        </motion.div>
-      </div>
-
-      {/* Cart Drawer */}
-      <AnimatePresence>
-        {showCart && (
-          <motion.div
-            className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setShowCart(false)}
-          >
+  if (step === 1 || cart.length === 0) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
+        <Navigation />
+        <div className="pt-24 pb-16">
+          <div className="container mx-auto px-4">
             <motion.div
-              className="absolute right-0 top-0 h-full w-full max-w-md bg-white shadow-2xl"
-              initial={{ x: '100%' }}
-              animate={{ x: 0 }}
-              exit={{ x: '100%' }}
-              transition={{ duration: 0.3 }}
-              onClick={(e) => e.stopPropagation()}
+              className="max-w-2xl mx-auto text-center"
+              initial={{ opacity: 0, y: 50 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8 }}
             >
-              <div className="flex flex-col h-full">
-                <div className="flex items-center justify-between p-6 border-b">
-                  <h2 className="text-2xl font-serif text-slate-800">Your Cart</h2>
+              <h1 className="text-4xl font-serif text-slate-800 mb-6">Pre-Order Your Feast</h1>
+              {cart.length === 0 ? (
+                <div>
+                  <p className="text-gray-600 mb-8">Your cart is empty. Browse our menu to start your order.</p>
                   <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setShowCart(false)}
+                    onClick={() => window.location.href = '/menu'}
+                    className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700"
                   >
-                    <X className="w-4 h-4" />
+                    Browse Menu
                   </Button>
                 </div>
+              ) : (
+                <div>
+                  <p className="text-gray-600 mb-8">Review your order and proceed to checkout.</p>
+                  <Button
+                    onClick={handleStepTwo}
+                    className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700"
+                  >
+                    Proceed to Checkout
+                  </Button>
+                </div>
+              )}
+            </motion.div>
+          </div>
+        </div>
+        <Footer />
+        <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
+      </div>
+    );
+  }
 
-                <div className="flex-1 overflow-y-auto p-6">
-                  {cart.length === 0 ? (
-                    <div className="text-center py-8">
-                      <ShoppingCart className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                      <p className="text-gray-600">Your cart is empty</p>
+  if (step === 4) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
+        <Navigation />
+        <div className="pt-24 pb-16">
+          <div className="container mx-auto px-4">
+            <motion.div
+              className="max-w-2xl mx-auto text-center"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.8 }}
+            >
+              <Card className="border-green-200 bg-green-50">
+                <CardContent className="p-8">
+                  <CheckCircle className="w-16 h-16 text-green-600 mx-auto mb-4" />
+                  <h1 className="text-3xl font-serif text-slate-800 mb-4">Order Confirmed!</h1>
+                  <p className="text-gray-600 mb-6">
+                    Your pre-order <strong>#{orderId}</strong> has been placed successfully.
+                  </p>
+                  <div className="bg-white p-4 rounded-lg mb-6">
+                    <p className="text-sm text-gray-600 mb-2">Pickup Time:</p>
+                    <p className="font-semibold text-amber-600">{orderDetails.pickupTime}</p>
+                  </div>
+                  <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                    <Button
+                      onClick={() => window.location.href = '/profile'}
+                      variant="outline"
+                    >
+                      View Order Status
+                    </Button>
+                    <Button
+                      onClick={() => window.location.href = '/menu'}
+                      className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700"
+                    >
+                      Order More
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
+      <Navigation />
+      <div className="pt-24 pb-16">
+        <div className="container mx-auto px-4">
+          <motion.div
+            className="max-w-4xl mx-auto"
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+          >
+            {/* Progress Steps */}
+            <div className="flex items-center justify-center mb-12">
+              <div className="flex items-center space-x-4">
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center ${step >= 2 ? 'bg-amber-600 text-white' : 'bg-gray-200'}`}>
+                  1
+                </div>
+                <div className={`w-16 h-0.5 ${step >= 3 ? 'bg-amber-600' : 'bg-gray-200'}`}></div>
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center ${step >= 3 ? 'bg-amber-600 text-white' : 'bg-gray-200'}`}>
+                  2
+                </div>
+                <div className={`w-16 h-0.5 ${step >= 4 ? 'bg-amber-600' : 'bg-gray-200'}`}></div>
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center ${step >= 4 ? 'bg-green-600 text-white' : 'bg-gray-200'}`}>
+                  3
+                </div>
+              </div>
+            </div>
+
+            <div className="grid lg:grid-cols-2 gap-8">
+              {/* Order Summary */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Clock className="w-5 h-5" />
+                    Order Summary
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {cart.map((item) => (
+                      <div key={item.id} className="flex justify-between items-center pb-4 border-b">
+                        <div>
+                          <h4 className="font-medium">{item.name}</h4>
+                          <p className="text-sm text-gray-600">Qty: {item.quantity}</p>
+                        </div>
+                        <span className="font-bold text-amber-600">₹{item.price * item.quantity}</span>
+                      </div>
+                    ))}
+                    <div className="flex justify-between items-center pt-4 text-lg font-bold">
+                      <span>Total:</span>
+                      <span className="text-amber-600">₹{getTotalPrice()}</span>
                     </div>
-                  ) : (
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Step 2: Order Details */}
+              {step === 2 && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Order Details</CardTitle>
+                  </CardHeader>
+                  <CardContent>
                     <div className="space-y-4">
-                      {cart.map((item) => (
-                        <div key={item.id} className="flex items-center space-x-4 p-4 border rounded-lg">
-                          <img
-                            src={item.image}
-                            alt={item.name}
-                            className="w-16 h-16 object-cover rounded"
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="name">Full Name *</Label>
+                          <Input
+                            id="name"
+                            value={orderDetails.name}
+                            onChange={(e) => setOrderDetails(prev => ({ ...prev, name: e.target.value }))}
+                            required
                           />
-                          <div className="flex-1">
-                            <h4 className="font-medium text-slate-800">{item.name}</h4>
-                            <p className="text-amber-600 font-bold">₹{item.price}</p>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                        </div>
+                        <div>
+                          <Label htmlFor="phone">Phone Number *</Label>
+                          <Input
+                            id="phone"
+                            type="tel"
+                            value={orderDetails.phone}
+                            onChange={(e) => setOrderDetails(prev => ({ ...prev, phone: e.target.value }))}
+                            required
+                          />
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <Label htmlFor="pickupTime">Preferred Pickup Time *</Label>
+                        <Input
+                          id="pickupTime"
+                          type="datetime-local"
+                          value={orderDetails.pickupTime}
+                          onChange={(e) => setOrderDetails(prev => ({ ...prev, pickupTime: e.target.value }))}
+                          min={new Date(Date.now() + 60 * 60 * 1000).toISOString().slice(0, 16)} // 1 hour from now
+                          required
+                        />
+                      </div>
+                      
+                      <div>
+                        <Label htmlFor="requests">Special Requests</Label>
+                        <Textarea
+                          id="requests"
+                          value={orderDetails.specialRequests}
+                          onChange={(e) => setOrderDetails(prev => ({ ...prev, specialRequests: e.target.value }))}
+                          placeholder="Any special instructions..."
+                        />
+                      </div>
+                      
+                      <Button
+                        onClick={handleStepThree}
+                        className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700"
+                      >
+                        Proceed to Payment
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Step 3: Payment */}
+              {step === 3 && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <CreditCard className="w-5 h-5" />
+                      Payment
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-6">
+                      <div className="text-center">
+                        <p className="text-lg mb-2">Total Amount: <span className="font-bold text-amber-600">₹{getTotalPrice()}</span></p>
+                        <p className="text-sm text-gray-600">Order ID: {orderId}</p>
+                      </div>
+
+                      <div className="bg-gradient-to-r from-amber-50 to-orange-50 p-6 rounded-lg">
+                        <h3 className="font-semibold mb-4 text-center">Pay with UPI</h3>
+                        <div className="flex flex-col items-center space-y-4">
+                          <Button
+                            onClick={() => window.open(generateUPILink(), '_blank')}
+                            className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 px-8 py-3"
+                          >
+                            <Phone className="w-4 h-4 mr-2" />
+                            Pay ₹{getTotalPrice()} with UPI
+                          </Button>
+                          
+                          <div className="text-center">
+                            <p className="text-sm text-gray-600 mb-4">After payment, upload screenshot for confirmation:</p>
+                            <Button 
+                              variant="outline" 
+                              onClick={() => handlePaymentSubmit()}
+                              disabled={isLoading}
+                              className="w-full"
                             >
-                              <Minus className="w-3 h-3" />
-                            </Button>
-                            <span className="w-8 text-center">{item.quantity}</span>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                            >
-                              <Plus className="w-3 h-3" />
+                              <Upload className="w-4 h-4 mr-2" />
+                              {isLoading ? 'Processing...' : 'Confirm Payment'}
                             </Button>
                           </div>
                         </div>
-                      ))}
+                      </div>
                     </div>
-                  )}
-                </div>
-
-                {cart.length > 0 && (
-                  <div className="border-t p-6">
-                    <div className="flex justify-between items-center mb-4">
-                      <span className="text-xl font-semibold">Total:</span>
-                      <span className="text-2xl font-bold text-amber-600">₹{getTotalPrice()}</span>
-                    </div>
-                    <Button
-                      onClick={handleCheckout}
-                      className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white py-3 text-lg"
-                    >
-                      Place Pre-Order
-                    </Button>
-                  </div>
-                )}
-              </div>
-            </motion.div>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
           </motion.div>
-        )}
-      </AnimatePresence>
+        </div>
+      </div>
+      <Footer />
     </div>
   );
 };
