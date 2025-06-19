@@ -3,43 +3,32 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Import fonts */
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap');
+/* Import premium fonts */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&display=swap');
 
-/* Definition of the design system with luxury restaurant theme */
-
+/* Premium luxury restaurant design system */
 @layer base {
   :root {
     --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
-
     --card: 0 0% 100%;
     --card-foreground: 222.2 84% 4.9%;
-
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
-
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
-
+    --primary: 45 95% 58%;
+    --primary-foreground: 0 0% 0%;
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 222.2 47.4% 11.2%;
-
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
-
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-
+    --accent: 43 96% 56%;
+    --accent-foreground: 0 0% 0%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
-
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
-
-    --radius: 0.5rem;
-
+    --ring: 45 95% 58%;
+    --radius: 0.75rem;
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
     --sidebar-primary: 240 5.9% 10%;
@@ -48,44 +37,43 @@
     --sidebar-accent-foreground: 240 5.9% 10%;
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+
+    /* Custom luxury variables */
+    --gold-primary: 45 95% 58%;
+    --gold-secondary: 43 96% 56%;
+    --amber-warm: 43 89% 38%;
+    --slate-warm: 215 25% 27%;
+    --shadow-luxury: 45 95% 58% / 0.1;
   }
 
   .dark {
     --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
-
     --card: 222.2 84% 4.9%;
     --card-foreground: 210 40% 98%;
-
     --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
-
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-
+    --primary: 45 95% 58%;
+    --primary-foreground: 0 0% 0%;
     --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
-
     --muted: 217.2 32.6% 17.5%;
     --muted-foreground: 215 20.2% 65.1%;
-
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-
+    --accent: 43 96% 56%;
+    --accent-foreground: 0 0% 0%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
-
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
+    --ring: 45 95% 58%;
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-primary: 45 95% 58%;
+    --sidebar-primary-foreground: 0 0% 0%;
     --sidebar-accent: 240 3.7% 15.9%;
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-ring: 45 95% 58%;
   }
 }
 
@@ -94,54 +82,311 @@
     @apply border-border;
   }
 
+  html {
+    scroll-behavior: smooth;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground antialiased;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-feature-settings: "rlig" 1, "calt" 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   .font-serif {
     font-family: 'Playfair Display', Georgia, serif;
+    font-feature-settings: "liga" 1, "dlig" 1;
+  }
+
+  /* Improve text rendering */
+  h1, h2, h3, h4, h5, h6 {
+    text-rendering: optimizeLegibility;
+    font-feature-settings: "kern" 1, "liga" 1, "calt" 1, "pnum" 1;
   }
 }
 
-/* Custom utility classes for luxury effects */
+/* Luxury utility classes */
 @layer utilities {
-  .text-gradient {
-    @apply bg-gradient-to-r from-amber-400 to-amber-600 bg-clip-text text-transparent;
+  /* Premium gradients */
+  .text-gradient-gold {
+    @apply bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 bg-clip-text text-transparent;
   }
 
+  .text-gradient-luxury {
+    @apply bg-gradient-to-br from-amber-300 via-amber-500 to-amber-700 bg-clip-text text-transparent;
+  }
+
+  .bg-gradient-luxury {
+    @apply bg-gradient-to-br from-amber-400 via-amber-500 to-amber-600;
+  }
+
+  /* Glass morphism effects */
   .glass-effect {
-    @apply bg-white/10 backdrop-blur-sm border border-white/20;
+    @apply bg-white/10 backdrop-blur-xl border border-white/20 shadow-2xl;
   }
 
+  .glass-effect-strong {
+    @apply bg-white/20 backdrop-blur-2xl border border-white/30 shadow-2xl;
+  }
+
+  .glass-nav {
+    @apply bg-white/95 backdrop-blur-xl border-b border-amber-200/50;
+  }
+
+  /* Luxury shadows */
+  .shadow-luxury {
+    box-shadow: 0 25px 50px -12px rgba(251, 191, 36, 0.15), 0 10px 20px -5px rgba(0, 0, 0, 0.1);
+  }
+
+  .shadow-luxury-strong {
+    box-shadow: 0 35px 60px -12px rgba(251, 191, 36, 0.25), 0 15px 25px -5px rgba(0, 0, 0, 0.15);
+  }
+
+  /* Hover effects */
   .hover-glow {
-    @apply transition-all duration-300 hover:shadow-lg hover:shadow-amber-500/25;
+    @apply transition-all duration-500 hover:shadow-luxury;
   }
 
+  .hover-lift {
+    @apply transition-transform duration-300 hover:-translate-y-2 hover:shadow-luxury;
+  }
+
+  .hover-scale {
+    @apply transition-transform duration-300 hover:scale-105;
+  }
+
+  /* Interactive elements */
+  .interactive-element {
+    @apply transition-all duration-300 hover:shadow-lg hover:shadow-amber-500/20 hover:-translate-y-1;
+  }
+
+  /* Smooth scrolling */
   .scroll-smooth {
     scroll-behavior: smooth;
   }
+
+  /* Text effects */
+  .text-shadow-luxury {
+    text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3), 0 2px 4px rgba(251, 191, 36, 0.2);
+  }
+
+  /* Animation utilities */
+  .animate-fade-in {
+    animation: fade-in 0.6s ease-out forwards;
+  }
+
+  .animate-slide-up {
+    animation: slide-up 0.8s ease-out forwards;
+  }
+
+  .animate-scale-in {
+    animation: scale-in 0.5s ease-out forwards;
+  }
+
+  /* Premium focus styles */
+  .focus-luxury {
+    @apply focus:ring-4 focus:ring-amber-500/20 focus:border-amber-500 outline-none;
+  }
 }
 
-/* Smooth scrolling for the entire page */
-html {
-  scroll-behavior: smooth;
+/* Custom animations */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-/* Custom scrollbar styling */
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* Premium scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
+  height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f1f1;
-}
-
-::-webkit-scrollbar-thumb {
-  background: linear-gradient(to bottom, #d4af37, #b8860b);
+  background: #f8fafc;
   border-radius: 4px;
 }
 
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  border-radius: 4px;
+  transition: all 0.3s ease;
+}
+
 ::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(to bottom, #b8860b, #996f00);
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  box-shadow: 0 2px 8px rgba(251, 191, 36, 0.3);
+}
+
+::-webkit-scrollbar-corner {
+  background: #f8fafc;
+}
+
+/* Firefox scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #fbbf24 #f8fafc;
+}
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+  .text-7xl {
+    font-size: 3.5rem;
+    line-height: 1.1;
+  }
+  
+  .text-6xl {
+    font-size: 3rem;
+    line-height: 1.1;
+  }
+
+  /* Improve touch targets */
+  button, a, [role="button"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Prevent horizontal overflow */
+  body {
+    overflow-x: hidden;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .text-gradient-gold,
+  .text-gradient-luxury {
+    @apply text-amber-600;
+    background: none;
+    -webkit-background-clip: initial;
+    background-clip: initial;
+    -webkit-text-fill-color: initial;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Print styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  
+  body {
+    -webkit-print-color-adjust: exact;
+    color-adjust: exact;
+  }
+}
+
+/* Loading states */
+.loading-shimmer {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+/* Premium button styles */
+.btn-luxury {
+  @apply bg-gradient-to-r from-amber-500 via-amber-600 to-amber-700 hover:from-amber-600 hover:via-amber-700 hover:to-amber-800 text-white font-semibold px-8 py-4 rounded-full shadow-luxury hover:shadow-luxury-strong transition-all duration-500 transform hover:scale-105 active:scale-95;
+}
+
+.btn-luxury-outline {
+  @apply border-2 border-amber-500 text-amber-600 hover:bg-amber-500 hover:text-white font-semibold px-8 py-4 rounded-full transition-all duration-300 hover:shadow-luxury;
+}
+
+/* Card styles */
+.card-luxury {
+  @apply bg-white/95 backdrop-blur-sm border border-amber-200/50 rounded-2xl shadow-luxury hover:shadow-luxury-strong transition-all duration-500 hover:-translate-y-2;
+}
+
+/* Input styles */
+.input-luxury {
+  @apply border-slate-200 focus:border-amber-500 focus:ring-amber-500/20 rounded-xl transition-all duration-300 focus-luxury;
+}
+
+/* Navigation specific */
+.nav-link-active {
+  @apply text-white bg-gradient-to-r from-amber-500 to-amber-600 shadow-lg shadow-amber-500/25;
+}
+
+.nav-link {
+  @apply text-slate-700 hover:text-amber-700 transition-all duration-300;
+}
+
+/* Hero specific animations */
+.hero-text-reveal {
+  animation: fade-in 1.2s ease-out 0.8s both;
+}
+
+.hero-cta-reveal {
+  animation: slide-up 1s ease-out 1.8s both;
+}
+
+/* Responsive typography scale */
+@media (min-width: 1024px) {
+  .responsive-text-hero {
+    font-size: clamp(4rem, 8vw, 8rem);
+  }
+  
+  .responsive-text-subtitle {
+    font-size: clamp(1.5rem, 3vw, 2.5rem);
+  }
+}
+
+@media (max-width: 1023px) {
+  .responsive-text-hero {
+    font-size: clamp(2.5rem, 12vw, 4rem);
+  }
+  
+  .responsive-text-subtitle {
+    font-size: clamp(1.25rem, 5vw, 2rem);
+  }
 }

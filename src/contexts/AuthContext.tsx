@@ -37,15 +37,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // Check if this is an admin email and create admin credentials if needed
       if (email === 'admin@reeves.com' && user?.uid) {
         try {
-          const adminDocRef = doc(db, 'admin_credentials', email);
+          const adminDocRef = doc(db, 'admin_credentials', user.uid);
           const adminDoc = await getDoc(adminDocRef);
           
           if (!adminDoc.exists()) {
             await setDoc(adminDocRef, {
               uid: user.uid,
               email: user.email,
+              role: 'admin',
               isAdmin: true,
-              createdAt: new Date()
+              createdAt: new Date().toISOString()
             });
           }
         } catch (error) {
@@ -53,9 +54,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
       }
       
-      toast.success('Logged in successfully!');
+      toast.success('Welcome back!');
     } catch (error: any) {
-      toast.error(error.message);
+      console.error('Login error:', error);
+      toast.error(error.message || 'Login failed');
       throw error;
     }
   };
@@ -71,13 +73,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           name,
           email,
           phone,
-          createdAt: new Date()
+          createdAt: new Date().toISOString()
         });
       }
       
       toast.success('Account created successfully!');
     } catch (error: any) {
-      toast.error(error.message);
+      console.error('Signup error:', error);
+      toast.error(error.message || 'Signup failed');
       throw error;
     }
   };
@@ -88,15 +91,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setIsAdmin(false);
       toast.success('Logged out successfully!');
     } catch (error: any) {
-      toast.error(error.message);
+      console.error('Logout error:', error);
+      toast.error(error.message || 'Logout failed');
     }
   };
 
   const checkAdminStatus = async (user: User) => {
     try {
-      if (user.email) {
-        const adminDoc = await getDoc(doc(db, 'admin_credentials', user.email));
-        setIsAdmin(adminDoc.exists());
+      if (user.uid) {
+        const adminDoc = await getDoc(doc(db, 'admin_credentials', user.uid));
+        setIsAdmin(adminDoc.exists() && adminDoc.data()?.isAdmin === true);
       }
     } catch (error) {
       console.error('Error checking admin status:', error);

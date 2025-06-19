@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { Volume2, VolumeX } from 'lucide-react';
+import { Volume2, VolumeX, ChevronDown } from 'lucide-react';
 
 const Hero = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -21,7 +21,7 @@ const Hero = () => {
 
   const fullText = "Where Taste Meets Elegance";
 
-  // Preload images to prevent white flash
+  // Preload images
   useEffect(() => {
     const preloadImages = async () => {
       const imagePromises = heroImages.map((src) => {
@@ -38,20 +38,20 @@ const Hero = () => {
         setImagesLoaded(true);
       } catch (error) {
         console.error('Error preloading images:', error);
-        setImagesLoaded(true); // Continue even if some images fail
+        setImagesLoaded(true);
       }
     };
 
     preloadImages();
   }, []);
 
-  // Image slideshow effect
+  // Image slideshow with crossfade
   useEffect(() => {
     if (!imagesLoaded) return;
     
     const interval = setInterval(() => {
       setCurrentImageIndex((prev) => (prev + 1) % heroImages.length);
-    }, 5000);
+    }, 6000);
     return () => clearInterval(interval);
   }, [imagesLoaded]);
 
@@ -66,128 +66,156 @@ const Hero = () => {
     }
   }, [textIndex, fullText]);
 
-  const scrollToBooking = () => {
-    document.getElementById('booking')?.scrollIntoView({ behavior: 'smooth' });
-  };
-
-  const scrollToMenu = () => {
-    document.getElementById('menu')?.scrollIntoView({ behavior: 'smooth' });
+  const scrollToSection = (sectionId: string) => {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   };
 
   if (!imagesLoaded) {
     return (
-      <section className="relative h-screen flex items-center justify-center bg-slate-900">
+      <section className="relative h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-amber-900">
         <div className="text-center text-white">
-          <div className="w-8 h-8 border-4 border-amber-400 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p>Loading...</p>
+          <motion.div
+            className="w-12 h-12 border-4 border-amber-400 border-t-transparent rounded-full mx-auto mb-4"
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+          />
+          <p className="text-lg font-medium">Preparing your experience...</p>
         </div>
       </section>
     );
   }
 
   return (
-    <section className="relative h-screen flex items-center justify-center overflow-hidden">
-      {/* Background Image Slideshow */}
+    <section id="hero" className="relative h-screen flex items-center justify-center overflow-hidden">
+      {/* Background Images with Crossfade */}
       <div className="absolute inset-0">
-        {heroImages.map((image, index) => (
-          <motion.div
-            key={index}
-            className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-            style={{
-              backgroundImage: `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.6)), url('${image}')`
-            }}
-            initial={{ opacity: 0 }}
-            animate={{ 
-              opacity: index === currentImageIndex ? 1 : 0 
-            }}
-            transition={{ duration: 1.5, ease: "easeInOut" }}
-          />
-        ))}
+        <AnimatePresence mode="sync">
+          {heroImages.map((image, index) => (
+            <motion.div
+              key={`${image}-${index}`}
+              className="absolute inset-0"
+              style={{
+                backgroundImage: `linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.65)), url('${image}')`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                backgroundRepeat: 'no-repeat'
+              }}
+              initial={{ opacity: 0 }}
+              animate={{ 
+                opacity: index === currentImageIndex ? 1 : 0,
+                scale: index === currentImageIndex ? 1.05 : 1
+              }}
+              transition={{ 
+                duration: 2,
+                ease: "easeInOut"
+              }}
+            />
+          ))}
+        </AnimatePresence>
       </div>
       
-      {/* Parallax Overlay */}
-      <motion.div
-        className="absolute inset-0 bg-gradient-to-b from-transparent via-slate-900/20 to-slate-900/60"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 2 }}
-      />
+      {/* Luxury Overlay */}
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/10 to-black/40" />
 
       {/* Audio Toggle */}
       <motion.button
-        className="absolute top-8 right-8 z-20 p-3 rounded-full bg-black/30 backdrop-blur-sm text-white hover:bg-black/50 transition-all duration-300"
+        className="absolute top-28 right-6 z-20 p-4 rounded-full bg-black/20 backdrop-blur-md border border-white/10 text-white hover:bg-black/30 transition-all duration-300 group"
         onClick={() => setIsAudioEnabled(!isAudioEnabled)}
-        whileHover={{ scale: 1.1 }}
+        whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 1, delay: 2 }}
       >
-        {isAudioEnabled ? <Volume2 className="w-5 h-5" /> : <VolumeX className="w-5 h-5" />}
+        {isAudioEnabled ? (
+          <Volume2 className="w-5 h-5 group-hover:text-amber-300 transition-colors" />
+        ) : (
+          <VolumeX className="w-5 h-5 group-hover:text-amber-300 transition-colors" />
+        )}
       </motion.button>
       
-      {/* Content */}
-      <div className="relative z-10 text-center text-white px-4 max-w-4xl">
-        <motion.h1
-          className="text-7xl md:text-8xl font-serif mb-6 tracking-wide"
+      {/* Main Content */}
+      <div className="relative z-10 text-center text-white px-4 max-w-5xl mx-auto">
+        <motion.div
+          className="mb-8"
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1.2, delay: 0.5 }}
         >
-          <span className="text-amber-400">REEVES</span>
-        </motion.h1>
+          <motion.h1
+            className="text-6xl md:text-7xl lg:text-8xl font-serif mb-6 tracking-wide"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1.2, delay: 0.8 }}
+          >
+            <span className="bg-gradient-to-r from-amber-300 via-amber-400 to-amber-500 bg-clip-text text-transparent drop-shadow-2xl">
+              REEVES
+            </span>
+          </motion.h1>
+          
+          <motion.div
+            className="h-0.5 w-64 bg-gradient-to-r from-transparent via-amber-400 to-transparent mx-auto mb-8 rounded-full"
+            initial={{ scaleX: 0, opacity: 0 }}
+            animate={{ scaleX: 1, opacity: 1 }}
+            transition={{ duration: 1.5, delay: 1.2 }}
+          />
+        </motion.div>
         
         <motion.div
-          className="h-px w-48 bg-gradient-to-r from-transparent via-amber-400 to-transparent mx-auto mb-8"
-          initial={{ scaleX: 0 }}
-          animate={{ scaleX: 1 }}
-          transition={{ duration: 1.5, delay: 1 }}
-        />
-        
-        <motion.p
-          className="text-2xl md:text-3xl font-light mb-4 text-amber-100 h-12"
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1, delay: 1.2 }}
-        >
-          {displayText}
-          <motion.span
-            className="inline-block w-1 h-8 bg-amber-400 ml-1"
-            animate={{ opacity: [1, 0, 1] }}
-            transition={{ duration: 1, repeat: Infinity }}
-          />
-        </motion.p>
-        
-        <motion.p
-          className="text-lg md:text-xl text-gray-300 mb-12 max-w-2xl mx-auto leading-relaxed"
+          className="mb-6"
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, delay: 1.4 }}
+        >
+          <p className="text-2xl md:text-3xl lg:text-4xl font-light text-amber-100 h-16 flex items-center justify-center">
+            {displayText}
+            <motion.span
+              className="inline-block w-1 h-10 bg-amber-400 ml-2 rounded-full"
+              animate={{ opacity: [1, 0, 1] }}
+              transition={{ duration: 1, repeat: Infinity }}
+            />
+          </p>
+        </motion.div>
+        
+        <motion.p
+          className="text-lg md:text-xl lg:text-2xl text-gray-200 mb-12 max-w-3xl mx-auto leading-relaxed font-light"
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1, delay: 1.6 }}
         >
           Experience the finest culinary journey in Kakinada, where every dish tells a story 
           and every moment becomes a cherished memory.
         </motion.p>
         
         <motion.div
-          className="flex flex-col sm:flex-row gap-6 justify-center items-center"
+          className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-16"
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1, delay: 1.6 }}
+          transition={{ duration: 1, delay: 1.8 }}
         >
-          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+          <motion.div 
+            whileHover={{ scale: 1.05, y: -2 }} 
+            whileTap={{ scale: 0.95 }}
+          >
             <Button
-              onClick={scrollToBooking}
-              className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white px-8 py-4 text-lg font-medium rounded-none border-2 border-amber-400 hover:border-amber-300 transition-all duration-300 shadow-xl hover:shadow-amber-500/25"
+              onClick={() => scrollToSection('booking')}
+              className="bg-gradient-to-r from-amber-500 via-amber-600 to-amber-700 hover:from-amber-600 hover:via-amber-700 hover:to-amber-800 text-white px-10 py-4 text-lg font-semibold rounded-full border-2 border-amber-400/50 hover:border-amber-300 transition-all duration-400 shadow-2xl shadow-amber-500/25 hover:shadow-amber-500/40"
             >
               Reserve Your Table
             </Button>
           </motion.div>
           
-          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+          <motion.div 
+            whileHover={{ scale: 1.05, y: -2 }} 
+            whileTap={{ scale: 0.95 }}
+          >
             <Button
-              onClick={scrollToMenu}
+              onClick={() => scrollToSection('menu')}
               variant="outline"
-              className="border-2 border-white text-white hover:bg-white hover:text-slate-900 px-8 py-4 text-lg font-medium rounded-none transition-all duration-300"
+              className="border-2 border-white/80 text-white hover:bg-white hover:text-slate-900 px-10 py-4 text-lg font-semibold rounded-full backdrop-blur-sm bg-white/10 transition-all duration-400 hover:shadow-xl"
             >
               Explore Menu
             </Button>
@@ -197,38 +225,47 @@ const Hero = () => {
       
       {/* Image Indicators */}
       <motion.div
-        className="absolute bottom-20 left-1/2 transform -translate-x-1/2 flex space-x-2"
+        className="absolute bottom-32 left-1/2 transform -translate-x-1/2 flex space-x-3"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 1, delay: 2 }}
+        transition={{ duration: 1, delay: 2.2 }}
       >
         {heroImages.map((_, index) => (
           <motion.button
             key={index}
-            className={`w-2 h-2 rounded-full transition-all duration-300 ${
-              index === currentImageIndex ? 'bg-amber-400 scale-125' : 'bg-white/50'
+            className={`w-3 h-3 rounded-full transition-all duration-500 ${
+              index === currentImageIndex 
+                ? 'bg-amber-400 scale-125 shadow-lg shadow-amber-400/50' 
+                : 'bg-white/40 hover:bg-white/60'
             }`}
             onClick={() => setCurrentImageIndex(index)}
-            whileHover={{ scale: 1.2 }}
+            whileHover={{ scale: 1.3 }}
+            whileTap={{ scale: 0.9 }}
           />
         ))}
       </motion.div>
       
-      {/* Scroll Indicator - Fixed positioning */}
+      {/* Scroll Indicator - Perfectly Centered */}
       <motion.div
-        className="absolute left-1/2 transform -translate-x-1/2 text-center"
-        style={{ bottom: '3%' }}
+        className="absolute bottom-8 left-1/2 transform -translate-x-1/2 text-center cursor-pointer group"
+        onClick={() => scrollToSection('philosophy')}
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 1, delay: 2 }}
+        transition={{ duration: 1, delay: 2.4 }}
+        whileHover={{ y: -4 }}
       >
-        <div className="text-white">
-          <p className="text-sm mb-4 tracking-wide">SCROLL TO DISCOVER</p>
+        <div className="text-white/90 group-hover:text-amber-300 transition-all duration-300">
+          <p className="text-sm font-medium tracking-[0.2em] mb-4 group-hover:tracking-[0.25em] transition-all duration-300">
+            DISCOVER MORE
+          </p>
           <motion.div
-            className="w-px h-16 bg-gradient-to-b from-amber-400 to-transparent mx-auto"
-            animate={{ scaleY: [1, 0.5, 1] }}
-            transition={{ duration: 2, repeat: Infinity }}
-          />
+            className="flex flex-col items-center"
+            animate={{ y: [0, 8, 0] }}
+            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+          >
+            <ChevronDown className="w-6 h-6 mb-1 group-hover:text-amber-300 transition-colors" />
+            <div className="w-px h-12 bg-gradient-to-b from-amber-400/80 to-transparent rounded-full" />
+          </motion.div>
         </div>
       </motion.div>
     </section>
