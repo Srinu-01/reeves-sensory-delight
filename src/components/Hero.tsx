@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
@@ -86,28 +87,22 @@ const Hero = () => {
 
   return (
     <section className="relative h-screen flex items-center justify-center overflow-hidden">
-      {/* Background Image Slideshow with improved transitions */}
+      {/* Background Image Slideshow */}
       <div className="absolute inset-0">
-        <AnimatePresence mode="wait">
-          {heroImages.map((image, index) => (
-            index === currentImageIndex && (
-              <motion.div
-                key={index}
-                className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-                style={{
-                  backgroundImage: `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.6)), url('${image}')`
-                }}
-                initial={{ opacity: 0, scale: 1.1 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ 
-                  duration: 2, 
-                  ease: [0.4, 0, 0.2, 1]
-                }}
-              />
-            )
-          ))}
-        </AnimatePresence>
+        {heroImages.map((image, index) => (
+          <motion.div
+            key={index}
+            className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+            style={{
+              backgroundImage: `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.6)), url('${image}')`
+            }}
+            initial={{ opacity: 0 }}
+            animate={{ 
+              opacity: index === currentImageIndex ? 1 : 0 
+            }}
+            transition={{ duration: 1.5, ease: "easeInOut" }}
+          />
+        ))}
       </div>
       
       {/* Parallax Overlay */}
@@ -217,6 +212,24 @@ const Hero = () => {
             whileHover={{ scale: 1.2 }}
           />
         ))}
+      </motion.div>
+      
+      {/* Scroll Indicator - Fixed positioning */}
+      <motion.div
+        className="absolute left-1/2 transform -translate-x-1/2 text-center"
+        style={{ bottom: '3%' }}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 1, delay: 2 }}
+      >
+        <div className="text-white">
+          <p className="text-sm mb-4 tracking-wide">SCROLL TO DISCOVER</p>
+          <motion.div
+            className="w-px h-16 bg-gradient-to-b from-amber-400 to-transparent mx-auto"
+            animate={{ scaleY: [1, 0.5, 1] }}
+            transition={{ duration: 2, repeat: Infinity }}
+          />
+        </div>
       </motion.div>
     </section>
   );

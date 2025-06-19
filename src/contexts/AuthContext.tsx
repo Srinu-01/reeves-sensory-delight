@@ -40,8 +40,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           const adminDocRef = doc(db, 'admin_credentials', email);
           const adminDoc = await getDoc(adminDocRef);
           
-          // Only create admin doc if it doesn't exist and user.uid is valid
-          if (!adminDoc.exists() && user.uid && user.email) {
+          if (!adminDoc.exists()) {
             await setDoc(adminDocRef, {
               uid: user.uid,
               email: user.email,
